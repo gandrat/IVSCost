@@ -25,7 +25,7 @@ coast_states<-as.numeric(unique(substring(m$GEOCODIGO,0,2)))
 # coast_mun<-append(coast_mun,"4202305")
 
 
-#Shape: setores censitarios de 2010--------------
+#Shapefile: setores de 2010--------------
 #Os dados daque em diante não estão no projeto do github, por questões de espaço de armazenamento
 files<-list.files('/home/gandra/Documents/github/censoIBGE/input_data/IBGE_raw_data/setores',
                   pattern = ".shp",full.names = T)
@@ -36,7 +36,10 @@ for(i in 1:length(files)){
   print(files[i])
   df<-read_sf(files[i],options="ENCODING=Windows-1252")
   df<-st_transform(df,crs=4674)
-  df<-df%>%transmute(cod_setor=CD_GEOCODI,tipo=TIPO,
+  substring(df$CD_GEOCODM,1,2)
+  df<-df%>%transmute(cod_setor=as.numeric(CD_GEOCODI),
+                     cod_uf=as.numeric(substring(df$CD_GEOCODI,1,2)),
+                     tipo=TIPO,
                      cod_mun=CD_GEOCODM,nome_mun=NM_MUNICIP,
                      geometry=geometry)
   
@@ -56,7 +59,8 @@ write_sf(set_sf,"output_data/setores_costeiros.shp",delete_layer = T)
 coast_setor<-set_sf$cod_setor
 
 #Planilha Básico----------------
-files<-list.files('/home/gandra/Documents/github/censoIBGE/input_data/IBGE_raw_data',pattern = "Basico",full.names = T)
+files<-list.files('/home/gandra/Documents/github/censoIBGE/input_data/IBGE_raw_data',
+                  pattern = "Basico",full.names = T)
 
 muni<-list()
 i=15
@@ -64,13 +68,13 @@ for(i in 1:length(files)){
   df<-read_xls(files[i])
   length(unique(df$Nome_do_municipio))
   df[is.na(df)] <- 0
-  df<-df%>%filter(Cod_setor %in% coast_setor)%>%mutate(cod_setor=Cod_setor,
+  df<-df%>%filter(Cod_setor %in% coast_setor)%>%transmute(cod_setor=Cod_setor,
                                                        ndom=V001, mordom=V003, 
                                                        poptotal=V005,
                                                        cod_mun=Cod_municipio,
                                                        situacao=Situacao_setor,
                                                        nome=Nome_do_municipio)
-  df<-df%>%select(cod_mun,nome,cod_setor, situacao,poptotal,ndom,mordom)
+  
   muni[[i]] <- df
 }
 munibasico = as.data.frame(do.call(rbind, muni))
@@ -118,6 +122,24 @@ for(i in 1:length(files)){
 munipessoa1 = as.data.frame(do.call(rbind, muni))
 save.image()
 
+#Planilha Pessoa03--------------
+files<-list.files('/home/gandra/Documents/github/censoIBGE/input_data/IBGE_raw_data',
+                  pattern = "Pessoa03",full.names = T)
+i=15
+muni<-list()
+for(i in 1:length(files)){
+  
+  df<-read_xls(files[i])
+  df<-as.data.frame(lapply(df,as.numeric))
+  df[is.na(df)] <- 0
+  df<-df%>%filter(Cod_setor %in% coast_setor)
+  df<-df%>%transmute(cod_setor=Cod_setor,
+                     raca=V003+V004+V005+V006)
+  
+  muni[[i]] <- df
+}
+munipessoa03 = as.data.frame(do.call(rbind, muni))
+save.image()
 #Planilha Pessoa13--------------
 files<-list.files('/home/gandra/Documents/github/censoIBGE/input_data/IBGE_raw_data',
                   pattern = "Pessoa13",full.names = T)
@@ -155,7 +177,6 @@ for(i in 1:length(files)){
                   renda=V003,
                   srenda=V014,
                   abaixopob=V005)
-  df<-df%>%select(cod_setor,renda,srenda)
   muni[[i]] <- df
 }
 munidomrenda = as.data.frame(do.call(rbind, muni))
@@ -163,14 +184,16 @@ munidomrenda = as.data.frame(do.call(rbind, muni))
 save.image()
 
 #Mesclando todas as planilhas------
-
+load('.RData')
 setores<-merge(munibasico,munidomrenda,by='cod_setor')
 setores<-merge(setores,munipessoa1,by='cod_setor')
+setores<-merge(setores,munipessoa03,by='cod_setor')
 setores<-merge(setores,munidom2,by='cod_setor')
 setores<-merge(setores,munipessoa13,by='cod_setor')
-setores_sf<-merge(set_sf,setores,by='cod_setor')
+setores_sf<-merge(set_sf,setores,by=c('cod_setor','cod_mun'))
 
+save.image()
 keep(setores,setores_sf,sure = T)
 write.csv(setores,"output_data/setores_indicadores.csv")
 write_sf(setores_sf,"output_data/setores_indicadores.shp")
-save.image('descritores_IVSCost.RData')
+save.image('input_data/descritores_IVSCost.RData')
