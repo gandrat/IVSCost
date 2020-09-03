@@ -24,11 +24,22 @@ package.check <- lapply(packages, FUN = function(x) {
 load('input_data/descritores_IVSCost.RData')
 
 #Selecionando e renomeando variáveis
-set<-setores%>%select(ndom,mordom,domcolet,poptotal,
-                       domalug,mulheres,raca,criancas,
-                      idosos,pmais5,alfabet,renda,abaixopob,
-                      srenda,cagua,cbanhesg,ccoletalixo,
-                      senergia)
+set<-setores%>%transmute(cd01=mordom,
+                         cd02=domalug/poptotal,
+                         cd03=domcolet/poptotal,
+                         cd04=renda,
+                         cd05=abaixopob/ndom,
+                         cd06=srenda/ndom,
+                         cp01=mulheres/poptotal,
+                         cp02=(criancas+idosos)/poptotal,
+                         cp03=raca/poptotal,
+                         cp04=pmais5-alfabet,
+                         ci01=(poptotal-cagua)/poptotal,
+                         ci02=(poptotal-cbanhesg)/poptotal,
+                         ci03=(poptotal-ccoletalixo)/poptotal,
+                         ci04=senergia/poptotal
+)
+                         
 
 #Correlograma-------------------
 setcor=set[complete.cases(set),]
@@ -58,7 +69,7 @@ plot(pc, type='lines')
 fviz_screeplot(pc, choice='eigenvalue', geom='line')+
   ylab('Variância')+xlab('PCs')+ggtitle(NULL)+
   geom_hline(yintercept=1, linetype='dashed')
-ggsave('figures/pca_scree_varbrutas.jpg', width=15, heigh=8, units='cm',dpi=150)
+ggsave('figures/pca_scree_varindex.jpg', width=15, heigh=8, units='cm',dpi=150)
 
 
 #Roda PCA
@@ -68,6 +79,5 @@ fviz_pca_var(pc,axes = c(1,2),
              repel = TRUE,     # Avoid text overlapping
              title='')+
   theme(text=element_text(family='Times',size=10),
-        legend.position = 'none')+
-  xlab('PC1 (70%)')+ylab('PC2 (7.9%)')
-ggsave("figures/pca_wheel_varbrutas.jpg", dpi=500, units='cm', width=14, height=14)
+        legend.position = 'none')
+ggsave("figures/pca_wheel_varindex.jpg", dpi=500, units='cm', width=14, height=14)
