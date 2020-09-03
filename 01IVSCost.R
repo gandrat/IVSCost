@@ -43,22 +43,22 @@ set<-set[complete.cases(set),]
 pc<-prcomp(set,scale = TRUE)
 plot(pc, type='lines')
 
-ggbiplot(pc, choices=1:2, obs.scale = 1, var.scale = 1,
-         groups = set$regiao,ellipse = T,varname.size = 4,varname.adjust = 2, alpha=.1) +
-  scale_color_brewer(palette = rev("Set1"), name='') +
-  ylim(c(-6,6))+
-  xlim(c(-8,8))+
-  
-  theme(legend.direction = 'horizontal', legend.position = 'top')+
-  xlab('PC1 (53%)')+
-  ylab('PC2 (10%)')
+# ggbiplot(pc, choices=1:2, obs.scale = 1, var.scale = 1,
+#          groups = set$regiao,ellipse = T,varname.size = 4,varname.adjust = 2, alpha=.1) +
+#   scale_color_brewer(palette = rev("Set1"), name='') +
+#   ylim(c(-6,6))+
+#   xlim(c(-8,8))+
+#   
+#   theme(legend.direction = 'horizontal', legend.position = 'top')+
+#   xlab('PC1 (53%)')+
+#   ylab('PC2 (10%)')
 # ggsave("output/artigo/soc_pca_biplot.jpg", dpi=200, units='cm', width=16, height=10)
 
 
 fviz_screeplot(pc, choice='eigenvalue', geom='line')+
   ylab('Variância')+xlab('PCs')+ggtitle(NULL)+
   geom_hline(yintercept=1, linetype='dashed')
-ggsave('output/artigo/scree_pca.jpg', width=15, heigh=8, units='cm',dpi=150)
+ggsave('figures/pca_scree_varbrutas.jpg', width=15, heigh=8, units='cm',dpi=150)
 
 
 #Roda PCA
@@ -70,4 +70,4 @@ fviz_pca_var(pc,axes = c(1,2),
   theme(text=element_text(family='Times',size=10),
         legend.position = 'none')+
   xlab('PC1 (70%)')+ylab('PC2 (7.9%)')
-ggsave("output/artigo/soc_pca_variaveis_v2.jpg", dpi=500, units='cm', width=14, height=14)
+ggsave("figures/pca_wheel_varbrutas.jpg", dpi=500, units='cm', width=14, height=14)
