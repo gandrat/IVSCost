@@ -27,7 +27,7 @@ coast_states<-as.numeric(unique(substring(m$GEOCODIGO,0,2)))
 
 #Shapefile: setores de 2010--------------
 #Os dados daque em diante não estão no projeto do github, por questões de espaço de armazenamento
-files<-list.files('/home/gandra/Documents/github/censoIBGE/input_data/IBGE_raw_data/setores',
+files<-list.files('/home/gandra/github/censoIBGE/input_data/IBGE_raw_data/setores',
                   pattern = ".shp",full.names = T)
 
 m<-list()
@@ -36,18 +36,20 @@ for(i in 1:length(files)){
   print(files[i])
   df<-read_sf(files[i],options="ENCODING=Windows-1252")
   df<-st_transform(df,crs=4674)
-  substring(df$CD_GEOCODM,1,2)
+  # substring(df$CD_GEOCODM,1,2)
   df<-df%>%transmute(cod_setor=as.numeric(CD_GEOCODI),
                      cod_uf=as.numeric(substring(df$CD_GEOCODI,1,2)),
                      tipo=TIPO,
                      cod_mun=CD_GEOCODM,nome_mun=NM_MUNICIP,
                      geometry=geometry)
   
-  # plot(df[1])
+  # plot(df[5])
   m[[i]] <- df
 }
+
 set_sf = as.data.frame(do.call(rbind, m))
 set_sf = st_sf(set_sf)
+#Filtrando municipios costeiros
 set_sf<-set_sf%>%filter(cod_mun %in% coast_mun)
 
 # plot(set_sf[1])
@@ -59,7 +61,7 @@ write_sf(set_sf,"output_data/setores_costeiros.shp",delete_layer = T)
 coast_setor<-set_sf$cod_setor
 
 #Planilha Básico----------------
-files<-list.files('/home/gandra/Documents/github/censoIBGE/input_data/IBGE_raw_data',
+files<-list.files('/home/gandra/github/censoIBGE/input_data/IBGE_raw_data',
                   pattern = "Basico",full.names = T)
 
 muni<-list()
@@ -78,6 +80,7 @@ for(i in 1:length(files)){
   muni[[i]] <- df
 }
 munibasico = as.data.frame(do.call(rbind, muni))
+
 save.image()
 
 
