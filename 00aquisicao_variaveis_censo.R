@@ -70,7 +70,7 @@ for(i in 1:length(files)){
   df[is.na(df)] <- 0
   df<-df%>%filter(Cod_setor %in% coast_setor)%>%transmute(cod_setor=Cod_setor,
                                                        ndom=V001, mordom=V003, 
-                                                       poptotal=V005,
+                                                       poptotal=V002,
                                                        cod_mun=Cod_municipio,
                                                        situacao=Situacao_setor,
                                                        nome=Nome_do_municipio)
