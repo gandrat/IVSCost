@@ -14,7 +14,7 @@ rm(list=ls()) ## Removendo as variáveis
 
 ##
 packages<-c('ggplot2','readxl','dplyr','sf','corrplot','factoextra','reshape')
-package.check <- lapply(packages, FUN = function(x) {
+    package.check <- lapply(packages, FUN = function(x) {
   if (!require(x, character.only = TRUE)) {
     install.packages(x, dependencies = TRUE)
     library(x, character.only = TRUE)
@@ -113,7 +113,7 @@ pc<-prcomp(setd,scale = TRUE)
 fviz_screeplot(pc, choice='eigenvalue', geom='line')+
   ylab('Variância')+xlab('PCs')+ggtitle(NULL)+
   geom_hline(yintercept=1, linetype='dashed')
-ggsave('figures/pca_scree_varindex.jpg', width=15, heigh=8, units='cm',dpi=150)
+ggsave('figures/pca_scree_vardom.jpg', width=15, heigh=8, units='cm',dpi=150)
 
 
 #Roda PCA
@@ -124,4 +124,70 @@ fviz_pca_var(pc,axes = c(1,2),
              title='')+
   theme(text=element_text(family='Times',size=10),
         legend.position = 'none')
-ggsave("figures/cd_pca_wheel_varindex.jpg", dpi=500, units='cm', width=14, height=14)
+ggsave("figures/pca_wheel_vardom.jpg", dpi=500, units='cm', width=14, height=14)
+
+#PCA: Características Morador-----------------
+setm<-set[complete.cases(set),6:9]
+pc<-prcomp(setm,scale = TRUE)
+
+
+# ggbiplot(pc, choices=1:2, obs.scale = 1, var.scale = 1,
+#          groups = set$regiao,ellipse = T,varname.size = 4,varname.adjust = 2, alpha=.1) +
+#   scale_color_brewer(palette = rev("Set1"), name='') +
+#   ylim(c(-6,6))+
+#   xlim(c(-8,8))+
+#   
+#   theme(legend.direction = 'horizontal', legend.position = 'top')+
+#   xlab('PC1 (53%)')+
+#   ylab('PC2 (10%)')
+# ggsave("output/artigo/soc_pca_biplot.jpg", dpi=200, units='cm', width=16, height=10)
+
+
+fviz_screeplot(pc, choice='eigenvalue', geom='line')+
+  ylab('Variância')+xlab('PCs')+ggtitle(NULL)+
+  geom_hline(yintercept=1, linetype='dashed')
+ggsave('figures/pca_scree_varmor.jpg', width=15, heigh=8, units='cm',dpi=150)
+
+
+#Roda PCA
+fviz_pca_var(pc,axes = c(1,2),
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE,     # Avoid text overlapping
+             title='')+
+  theme(text=element_text(family='Times',size=10),
+        legend.position = 'none')
+ggsave("figures/pca_wheel_varmor.jpg", dpi=500, units='cm', width=14, height=14)
+
+#PCA: Características Morador-----------------
+seti<-set[complete.cases(set),10:13]
+pc<-prcomp(seti,scale = TRUE)
+
+
+# ggbiplot(pc, choices=1:2, obs.scale = 1, var.scale = 1,
+#          groups = set$regiao,ellipse = T,varname.size = 4,varname.adjust = 2, alpha=.1) +
+#   scale_color_brewer(palette = rev("Set1"), name='') +
+#   ylim(c(-6,6))+
+#   xlim(c(-8,8))+
+#   
+#   theme(legend.direction = 'horizontal', legend.position = 'top')+
+#   xlab('PC1 (53%)')+
+#   ylab('PC2 (10%)')
+# ggsave("output/artigo/soc_pca_biplot.jpg", dpi=200, units='cm', width=16, height=10)
+
+
+fviz_screeplot(pc, choice='eigenvalue', geom='line')+
+  ylab('Variância')+xlab('PCs')+ggtitle(NULL)+
+  geom_hline(yintercept=1, linetype='dashed')
+ggsave('figures/pca_scree_varinfra.jpg', width=15, heigh=8, units='cm',dpi=150)
+
+
+#Roda PCA
+fviz_pca_var(pc,axes = c(1,2),
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE,     # Avoid text overlapping
+             title='')+
+  theme(text=element_text(family='Times',size=10),
+        legend.position = 'none')
+  ggsave("figures/pca_wheel_varinfra.jpg", dpi=500, units='cm', width=14, height=14)
