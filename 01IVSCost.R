@@ -25,12 +25,12 @@ package.check <- lapply(packages, FUN = function(x) {
 load('input_data/descritores_IVSCost.RData')
 
 
-#Erro (correção temporária)
-setores$poptotal=setores$domcolet
-
 
 #Selecionando e renomeando variáveis--------------
-set<-setores%>%transmute(cd01=mordom,
+set<-setores%>%transmute(cod_setor=cod_setor,
+                         cod_mun=cod_mun,
+                         nome_mun=nome,
+                         cd01=mordom,
                          cd02=domalug/poptotal,
                          cd03=renda,
                          cd04=abaixopob/ndom,
@@ -44,6 +44,14 @@ set<-setores%>%transmute(cd01=mordom,
                          ci03=(poptotal-ccoletalixo)/poptotal,
                          ci04=senergia/poptotal
 )
+write.csv(set,'output_data/setores_pca_ivscost.csv')
+
+summary(set)
+#Removendo setores com percentuais maiores que 1
+set<-set%>%filter(cd02<=1, cd04<=1, cd05<=1, cp01<=1,cp02<=1,cp03<=1,ci01<=1,
+                       ci02<=1,ci03<=1, ci04<=1)
+summary(set)
+nrow(setores)-nrow(set)
 
 #Histogramas
 ggplot(set,aes(x=cd01))+geom_histogram()
