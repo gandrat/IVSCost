@@ -60,7 +60,7 @@ write_sf(set_sf,"output_data/setores_costeiros.shp",delete_layer = T)
 #Fazendo um índice dos codigos dos setores para eliminar das análise futuras
 coast_setor<-set_sf$cod_setor
 
-#Planilha Básico----------------
+#Básico----------------
 files<-list.files('/home/gandra/github/censoIBGE/input_data/IBGE_raw_data',
                   pattern = "Basico",full.names = T)
 
@@ -71,7 +71,8 @@ for(i in 1:length(files)){
   length(unique(df$Nome_do_municipio))
   df[is.na(df)] <- 0
   df<-df%>%filter(Cod_setor %in% coast_setor)%>%transmute(cod_setor=Cod_setor,
-                                                       ndom=V001, mordom=V003, 
+                                                       ndom=V001, 
+                                                       mordom=V003, 
                                                        poptotal=V002,
                                                        cod_mun=Cod_municipio,
                                                        situacao=Situacao_setor,
@@ -84,30 +85,34 @@ munibasico = as.data.frame(do.call(rbind, muni))
 save.image()
 
 
-#Planilha Domicilio 02--------------
-files<-list.files('/home/gandra/Documents/github/censoIBGE/input_data/IBGE_raw_data',
+#Domicilio 02--------------
+files<-list.files('/home/gandra/github/censoIBGE/input_data/IBGE_raw_data',
                   pattern = "Domicilio02",full.names = T)
 
 muni<-list()
 for(i in 1:length(files)){
   df<-read_xls(files[i])
   df[is.na(df)] <- 0
-  df<-df%>%filter(Cod_setor %in% coast_setor)%>%transmute(cod_setor=Cod_setor,domcolet=as.numeric(V001),
-                                                          # poptotal=as.numeric(V002),
-                                                       domprop=as.numeric(V006)+as.numeric(V007), 
-                                                       domalug=as.numeric(V008),cagua=as.numeric(V012),
-                                                       cbanhesg=as.numeric(V017),sbanh=as.numeric(V023),
-                                                       ccoletalixo=as.numeric(V030),
-                                                       cenergia=as.numeric(V039), senergia=as.numeric(V041),
-                                                       homens=as.numeric(V046),mulheres=as.numeric(V090))
+  df<-df%>%filter(Cod_setor %in% coast_setor)%>%transmute(cod_setor=Cod_setor,
+                                                          poptotaldom=as.numeric(V001),#este seria a população?
+                                                          domprop=as.numeric(V006)+as.numeric(V007),
+                                                          domalug=as.numeric(V008),
+                                                          cagua=as.numeric(V012),
+                                                          cbanhesg=as.numeric(V017),
+                                                          sbanh=as.numeric(V023),
+                                                          ccoletalixo=as.numeric(V030),
+                                                          cenergia=as.numeric(V039),
+                                                          senergia=as.numeric(V041),
+                                                          homens=as.numeric(V046),
+                                                          mulheres=as.numeric(V090))
   
   muni[[i]] <- df
 }
 munidom2 = as.data.frame(do.call(rbind, muni))
 save.image()
 
-#Planilha Pessoa01--------------
-files<-list.files('/home/gandra/Documents/github/censoIBGE/input_data/IBGE_raw_data',
+#Pessoa01--------------
+files<-list.files('/home/gandra/github/censoIBGE/input_data/IBGE_raw_data',
                   pattern = "Pessoa01",full.names = T)
 i=15
 muni<-list()
@@ -125,13 +130,12 @@ for(i in 1:length(files)){
 munipessoa1 = as.data.frame(do.call(rbind, muni))
 save.image()
 
-#Planilha Pessoa03--------------
-files<-list.files('/home/gandra/Documents/github/censoIBGE/input_data/IBGE_raw_data',
+#Pessoa03--------------
+files<-list.files('/home/gandra/github/censoIBGE/input_data/IBGE_raw_data',
                   pattern = "Pessoa03",full.names = T)
 i=15
 muni<-list()
 for(i in 1:length(files)){
-  
   df<-read_xls(files[i])
   df<-as.data.frame(lapply(df,as.numeric))
   df[is.na(df)] <- 0
@@ -143,15 +147,17 @@ for(i in 1:length(files)){
 }
 munipessoa03 = as.data.frame(do.call(rbind, muni))
 save.image()
-#Planilha Pessoa13--------------
-files<-list.files('/home/gandra/Documents/github/censoIBGE/input_data/IBGE_raw_data',
+
+
+#Pessoa13--------------
+files<-list.files('/home/gandra/github/censoIBGE/input_data/IBGE_raw_data',
                   pattern = "Pessoa13",full.names = T)
 i=15
 muni<-list()
 for(i in 1:length(files)){
   
   df<-read_xls(files[i])
-  grep("V134", colnames(df))
+  grep("V094", colnames(df))
   grep("V039", colnames(df))
   df<-as.data.frame(lapply(df,as.numeric))
   df[is.na(df)] <- 0
@@ -166,8 +172,8 @@ for(i in 1:length(files)){
 munipessoa13 = as.data.frame(do.call(rbind, muni))
 save.image()
 
-#Planilha DomicilioRenda--------------
-files<-list.files('/home/gandra/Documents/github/censoIBGE/input_data/IBGE_raw_data',
+#DomicilioRenda--------------
+files<-list.files('/home/gandra/github/censoIBGE/input_data/IBGE_raw_data',
                   pattern = "DomicilioRenda",full.names = T)
 
 muni<-list()
@@ -186,6 +192,42 @@ munidomrenda = as.data.frame(do.call(rbind, muni))
 
 save.image()
 
+#PessoaRenda--------------
+files<-list.files('/home/gandra/github/censoIBGE/input_data/IBGE_raw_data',
+                  pattern = "PessoaRenda",full.names = T)
+
+muni<-list()
+for(i in 1:length(files)){
+  df<-read_xls(files[i])
+  df<-as.data.frame(lapply(df,as.numeric))
+  df[is.na(df)] <- 0
+  df<-df%>%filter(Cod_setor %in% coast_setor)
+  df<-df%>%transmute(cod_setor=Cod_setor,
+                     rendavul=V001)
+  muni[[i]] <- df
+}
+munipessoarenda = as.data.frame(do.call(rbind, muni))
+
+save.image()
+
+#Entorno--------------
+files<-list.files('/home/gandra/github/censoIBGE/input_data/IBGE_raw_data',
+                  pattern = "Entorno03",full.names = T)
+
+muni<-list()
+for(i in 1:length(files)){
+  df<-read_xls(files[i])
+  df<-as.data.frame(lapply(df,as.numeric))
+  df[is.na(df)] <- 0
+  df<-df%>%filter(Cod_setor %in% coast_setor)
+  df<-df%>%transmute(cod_setor=Cod_setor,
+                     sempav=V436+V438+V440)
+  muni[[i]] <- df
+}
+munientorno = as.data.frame(do.call(rbind, muni))
+
+save.image()
+
 #Mesclando todas as planilhas------
 load('.RData')
 setores<-merge(munibasico,munidomrenda,by='cod_setor')
@@ -193,10 +235,12 @@ setores<-merge(setores,munipessoa1,by='cod_setor')
 setores<-merge(setores,munipessoa03,by='cod_setor')
 setores<-merge(setores,munidom2,by='cod_setor')
 setores<-merge(setores,munipessoa13,by='cod_setor')
+setores<-merge(setores,munipessoarenda,by='cod_setor')
+setores<-merge(setores,munientorno,by='cod_setor')
 setores_sf<-merge(set_sf,setores,by=c('cod_setor','cod_mun'))
 
 save.image()
 keep(setores,setores_sf,sure = T)
-write.csv(setores,"output_data/setores_indicadores.csv")
-write_sf(setores_sf,"output_data/setores_indicadores.shp")
-save.image('input_data/descritores_IVSCost.RData')
+write.csv(setores,"output_data/setores_indicadoresV2.csv")
+write_sf(setores_sf,"output_data/setores_indicadoresV2.shp")
+save.image('input_data/descritores_IVSCostV2.RData')
