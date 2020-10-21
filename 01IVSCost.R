@@ -13,7 +13,7 @@ rm(list=ls()) ## Removendo as variáveis
 # install_github("kassambara/factoextra")
 
 ##
-packages<-c('ggplot2','readxl','dplyr','sf','corrplot','factoextra','reshape','smacof')
+packages<-c('ggplot2','readxl','dplyr','sf','corrplot','factoextra','reshape','smacof','gdata')
 package.check <- lapply(packages, FUN = function(x) {
   if (!require(x, character.only = TRUE)) {
     install.packages(x, dependencies = TRUE)
@@ -177,6 +177,18 @@ fviz_pca_var(pc,axes = c(1,2),
         legend.position = 'none')
 ggsave("figures/ci_pca_wheelV2.jpg", dpi=500, units='cm', width=14, height=14)
 
+#MDS: Domicilios----------------
+keep(set)
+mdsp<-set[complete.cases(set),c('cd01','cd02')]
+set_scale<-scale(mdsp)
+d <- dist(set_scale) # euclidean distances between the rows
+
+fitp<-mds(d,type='interval')
+fitp
+jpeg('figures/mds_pessoas.jpg',width=15,height = 10,units='cm',res=300)
+plot(fitp, plot.type = "Shepard",
+     main = "Shepard Diagram (Interval MDS)")
+dev.off()
 
 #MDS: Pessoais----------------
 mdsp<-set[complete.cases(set),c('cp01','cp02','cp03','cp04','cp05')]
@@ -191,6 +203,7 @@ plot(fitp, plot.type = "Shepard",
 dev.off()
 
 #MDS: Infraestrutura----------------
+rm(d)
 mdsi<-set[complete.cases(set),c('ci01','ci02','ci03','ci04')]
 
 set_scale<-scale(mdsi)
@@ -202,3 +215,5 @@ jpeg('figures/mds_infra.jpg',width=15,height = 10,units='cm',res=300)
 plot(fiti, plot.type = "Shepard",
      main = "Shepard Diagram (Interval MDS)")
 dev.off()
+rm(d)
+save.image('output_data/mds.RData')
