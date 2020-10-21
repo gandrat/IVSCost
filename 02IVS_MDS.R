@@ -13,7 +13,7 @@ rm(list=ls()) ## Removendo as variáveis
 # install_github("kassambara/factoextra")
 
 ##
-packages<-c('ggplot2','readxl','dplyr','sf','corrplot','factoextra','reshape','smacof','gdata','fifer')
+packages<-c('ggplot2','readxl','dplyr','sf','corrplot','factoextra','reshape','smacof','gdata')
 package.check <- lapply(packages, FUN = function(x) {
   if (!require(x, character.only = TRUE)) {
     install.packages(x, dependencies = TRUE)
