@@ -85,8 +85,9 @@ nrow(setores)-nrow(set)
 set.m<-melt(set)
 
 ggplot(set.m,aes(x=value))+geom_histogram()+
-  facet_wrap(~variable,scales='free')
-
+  facet_wrap(~variable,scales='free')+
+  theme_bw()
+ggsave('figures/histogramas.jpg',dpi=200, units='cm', width=20, height=14)
 
 #Correlograma-------------------
 
@@ -114,36 +115,36 @@ fviz_pca_var(pc,axes = c(1,2),
         legend.position = 'none')
 ggsave("figures/pca_wheelV2.jpg", dpi=500, units='cm', width=14, height=14)
 
-#PCA: Domiciliares-----------------
-setd<-set[c('cd01','cd02')]
-pc<-prcomp(setd,scale = TRUE)
-
-
-fviz_screeplot(pc, choice='eigenvalue', geom='line')+
-  ylab('Variância')+xlab('PCs')+ggtitle(NULL)+
-  geom_hline(yintercept=1, linetype='dashed')
-ggsave('figures/cd_pca_screeV2.jpg', width=15, heigh=8, units='cm',dpi=150)
-
-
-#Roda PCA
-fviz_pca_var(pc,axes = c(1,2),
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE,     # Avoid text overlapping
-             title='')+
-  theme(text=element_text(family='Times',size=10),
-        legend.position = 'none')
-ggsave("figures/cd_pca_wheelV2.jpg", dpi=500, units='cm', width=14, height=14)
+# #PCA: Domiciliares-----------------
+# setd<-set[c('cd01','cd02')]
+# pc<-prcomp(setd,scale = TRUE)
+# 
+# 
+# fviz_screeplot(pc, choice='eigenvalue', geom='line')+
+#   ylab('Variância')+xlab('PCs')+ggtitle(NULL)+
+#   geom_hline(yintercept=1, linetype='dashed')
+# ggsave('figures/cd_pca_screeV2.jpg', width=15, heigh=8, units='cm',dpi=150)
+# 
+# 
+# #Roda PCA
+# fviz_pca_var(pc,axes = c(1,2),
+#              col.var = "contrib", # Color by contributions to the PC
+#              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+#              repel = TRUE,     # Avoid text overlapping
+#              title='')+
+#   theme(text=element_text(family='Times',size=10),
+#         legend.position = 'none')
+# ggsave("figures/cd_pca_wheelV2.jpg", dpi=500, units='cm', width=14, height=14)
 
 #PCA: Pessoais-----------------
-setp<-set[c('cp01','cp02','cp03','cp04','cp05')]
+setp<-set[c('cp01','cp02','cp03','cp04','cp05','cd01','cd02')]
 pc<-prcomp(setp,scale = TRUE)
 
 
 fviz_screeplot(pc, choice='eigenvalue', geom='line')+
   ylab('Variância')+xlab('PCs')+ggtitle(NULL)+
   geom_hline(yintercept=1, linetype='dashed')
-ggsave('figures/cp_pca_screeV2.jpg', width=15, heigh=8, units='cm',dpi=150)
+ggsave('figures/cpd_pca_screeV2.jpg', width=15, heigh=8, units='cm',dpi=150)
 
 
 #Roda PCA
@@ -154,7 +155,7 @@ fviz_pca_var(pc,axes = c(1,2),
              title='')+
   theme(text=element_text(family='Times',size=10),
         legend.position = 'none')
-ggsave("figures/cp_pca_wheelV2.jpg", dpi=500, units='cm', width=14, height=14)
+ggsave("figures/cpd_pca_wheelV2.jpg", dpi=500, units='cm', width=14, height=14)
 
 #PCA: Infraestrutura-----------------
 seti<-set[c('ci01','ci02','ci03','ci04')]
@@ -166,6 +167,7 @@ fviz_screeplot(pc, choice='eigenvalue', geom='line')+
   geom_hline(yintercept=1, linetype='dashed')
 ggsave('figures/ci_pca_screeV2.jpg', width=15, heigh=8, units='cm',dpi=150)
 
+47.3+16.7
 
 #Roda PCA
 fviz_pca_var(pc,axes = c(1,2),
@@ -176,3 +178,5 @@ fviz_pca_var(pc,axes = c(1,2),
   theme(text=element_text(family='Times',size=10),
         legend.position = 'none')
 ggsave("figures/ci_pca_wheelV2.jpg", dpi=500, units='cm', width=14, height=14)
+
+51.5+26.2
