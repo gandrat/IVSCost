@@ -60,43 +60,43 @@ set<-set[complete.cases(set),] #mantem apenas os registros que possuem valores v
 #selecionando um numero randômico de observações para possibilitar o MDS
 set<-set%>%group_by(cod_region)%>%sample_n(1000)
 
-#MDS: Domicilios----------------
-
-mdsd<-set[complete.cases(set),c('cd01','cd02')]
-set_scale<-scale(mdsd)
-d <- dist(set_scale) # euclidean distances between the rows
-
-fitd<-mds(d,type='ratio')
-fitd
-jpeg('figures/mds_domicilios.jpg',width=15,height = 10,units='cm',res=300)
-plot(fitd, plot.type = "Shepard",
-     main = "Shepard Diagram (ratio MDS)")
-dev.off()
+# #MDS: Domicilios----------------
+# 
+# mdsd<-set[complete.cases(set),c('cd01','cd02')]
+# set_scale<-scale(mdsd)
+# d <- dist(set_scale) # euclidean distances between the rows
+# 
+# fitd<-mds(d,type='ratio')
+# fitd
+# jpeg('figures/mds_domicilios.jpg',width=15,height = 10,units='cm',res=300)
+# plot(fitd, plot.type = "Shepard",
+#      main = "Shepard Diagram (ratio MDS)")
+# dev.off()
 
 #MDS: Pessoais----------------
-mdsp<-set[complete.cases(set),c('cp01','cp02','cp03','cp04','cp05')]
+mdsp<-set[complete.cases(set),c('cp01','cp02','cp03','cp04','cp05','cd01','cd02')]
 set_scale<-scale(mdsp)
 d <- dist(set_scale) # euclidean distances between the rows
 
 fitp<-mds(d,type='ratio')
 fitp
-jpeg('figures/mds_pessoas.jpg',width=15,height = 10,units='cm',res=300)
+jpeg('figures/mds_pessoas_domicilios.jpg',width=15,height = 10,units='cm',res=300)
 plot(fitp, plot.type = "Shepard",
-     main = "Shepard Diagram (ratio MDS)")
+     main = "Condições Pessoais e de Domicílios (7 variáveis)")
 dev.off()
 
-#MDS: Infraestrutura----------------
-rm(d)
-mdsi<-set[complete.cases(set),c('ci01','ci02','ci03','ci04')]
-
-set_scale<-scale(mdsi)
-d <- dist(set_scale) # euclidean distances between the rows
-
-fiti<-mds(d,type='ratio')
-fiti
-jpeg('figures/mds_infra.jpg',width=15,height = 10,units='cm',res=300)
-plot(fiti, plot.type = "Shepard",
-     main = "Shepard Diagram (ratio MDS)")
-dev.off()
-rm(d)
-save.image('output_data/mds.RData')
+# #MDS: Infraestrutura----------------
+# rm(d)
+# mdsi<-set[complete.cases(set),c('ci01','ci02','ci03','ci04')]
+# 
+# set_scale<-scale(mdsi)
+# d <- dist(set_scale) # euclidean distances between the rows
+# 
+# fiti<-mds(d,type='ratio')
+# fiti
+# jpeg('figures/mds_infra.jpg',width=15,height = 10,units='cm',res=300)
+# plot(fiti, plot.type = "Shepard",
+#      main = "Condições de Infraestrutura (4 variáveis")
+# dev.off()
+# rm(d)
+save.image('output_data/mds2.RData')
