@@ -22,39 +22,62 @@ package.check <- lapply(packages, FUN = function(x) {
 })
 
 ##Carregando os dados---------------
-load('input_data/descritores_IVSCost.RData')
+load('input_data/descritores_IVSCostV2.RData')
 summary(setores)
 
 summary(setores$renda/setores$poptotal)
 
+summary(setores$poptotal-setores$poptotaldom)
 
-#Selecionando e renomeando variáveis--------------
+# #Selecionando variáveis--------------
+# set<-setores%>%transmute(cod_setor=cod_setor,
+#                          cod_mun=cod_mun,
+#                          nome_mun=nome,
+#                          cd01=mordom,
+#                          cd02=domalug/poptotal,
+#                          cd03=renda/poptotal,
+#                          cd04=abaixopob/ndom,
+#                          cd05=srenda/ndom,
+#                          cp01=mulheres/poptotal,
+#                          cp02=(criancas+idosos)/poptotal,
+#                          cp03=raca/poptotal,
+#                          cp04=(pmais5-alfabet)/poptotal,
+#                          ci01=(poptotal-cagua)/poptotal,
+#                          ci02=(poptotal-cbanhesg)/poptotal,
+#                          ci03=(poptotal-ccoletalixo)/poptotal
+# )
+
+
+#V2: Selecionando  variáveis--------------
 set<-setores%>%transmute(cod_setor=cod_setor,
                          cod_mun=cod_mun,
                          nome_mun=nome,
                          cd01=mordom,
                          cd02=domalug/poptotal,
-                         cd03=renda/poptotal,
-                         cd04=abaixopob/ndom,
-                         cd05=srenda/ndom,
+                         # cd03=renda/poptotal,
+                         # cd04=abaixopob/ndom,
+                         # cd05=srenda/ndom,
                          cp01=mulheres/poptotal,
                          cp02=(criancas+idosos)/poptotal,
                          cp03=raca/poptotal,
                          cp04=(pmais5-alfabet)/poptotal,
+                         cp05=rendavul/poptotal,
                          ci01=(poptotal-cagua)/poptotal,
                          ci02=(poptotal-cbanhesg)/poptotal,
-                         ci03=(poptotal-ccoletalixo)/poptotal
+                         ci03=(poptotal-ccoletalixo)/poptotal,
+                         ci04=sempav/poptotal
 )
 
 # set<-setores%>%transmute(cod_setor=cod_setor,cod_mun=cod_mun,nome_mun=nome,cd01=mordom,cd02=domalug/poptotal,cd03=renda,cd04=abaixopob/ndom,cd05=srenda/ndom,cp01=mulheres/poptotal,cp02=(criancas+idosos)/poptotal,cp03=raca/poptotal,cp04=pmais5-alfabet,ci01=(poptotal-cagua)/poptotal,ci02=(poptotal-cbanhesg)/poptotal,ci03=(poptotal-ccoletalixo)/poptotal,ci04=senergia/poptotal)
 
-write.csv(set,'output_data/setores_pca_ivscost.csv')
+write.csv(set,'output_data/setores_pca_ivscost_v2.csv')
 
 #Removendo setores com percentuais maiores que 1
-set<-set%>%filter(cd02<=1, cd04<=1, cd05<=1, cp01<=1,cp02<=1,cp03<=1, ci01<=1,
+summary(set)
+set<-set%>%filter(cd02<=1,  cp01<=1,cp02<=1,cp03<=1, ci01<=1,
                        ci02<=1,ci03<=1)
 set<-set[complete.cases(set),4:15] #mantem apenas os registros que possuem valores válidos em TODAS as variáveis
-summary(set)
+summary(set[4:14])
 nrow(setores)-nrow(set)
 
 #Histogramas
@@ -67,19 +90,19 @@ ggplot(set.m,aes(x=value))+geom_histogram()+
 
 #Correlograma-------------------
 
-M<-cor(set,method='spearman')
+M<-cor(set[4:14],method='spearman')
 
-jpeg('figures/correlograma_varbrutas.jpg',width=25,height = 25,units='cm',res=300)
+jpeg('figures/correlograma_varbrutasV2.jpg',width=25,height = 25,units='cm',res=300)
 corrplot(M,type='upper',method = 'number')
 dev.off()
 
 #PCA: Geral-----------
-pc<-prcomp(set,scale = TRUE)
+pc<-prcomp(set[4:14],scale = TRUE)
 
 fviz_screeplot(pc, choice='eigenvalue', geom='line')+
   ylab('Variância')+xlab('PCs')+ggtitle(NULL)+
   geom_hline(yintercept=1, linetype='dashed')
-ggsave('figures/pca_scree.jpg', width=15, heigh=8, units='cm',dpi=150)
+ggsave('figures/pca_screeV2.jpg', width=15, heigh=8, units='cm',dpi=150)
 
 #Roda PCA
 fviz_pca_var(pc,axes = c(1,2),
@@ -89,17 +112,17 @@ fviz_pca_var(pc,axes = c(1,2),
              title='')+
   theme(text=element_text(family='Times',size=10),
         legend.position = 'none')
-ggsave("figures/pca_wheel.jpg", dpi=500, units='cm', width=14, height=14)
+ggsave("figures/pca_wheelV2.jpg", dpi=500, units='cm', width=14, height=14)
 
 #PCA: Domiciliares-----------------
-setd<-set[c('cd01','cd02','cd03','cd04','cd05')]
+setd<-set[c('cd01','cd02')]
 pc<-prcomp(setd,scale = TRUE)
 
 
 fviz_screeplot(pc, choice='eigenvalue', geom='line')+
   ylab('Variância')+xlab('PCs')+ggtitle(NULL)+
   geom_hline(yintercept=1, linetype='dashed')
-ggsave('figures/cd_pca_scree_.jpg', width=15, heigh=8, units='cm',dpi=150)
+ggsave('figures/cd_pca_screeV2.jpg', width=15, heigh=8, units='cm',dpi=150)
 
 
 #Roda PCA
@@ -110,17 +133,17 @@ fviz_pca_var(pc,axes = c(1,2),
              title='')+
   theme(text=element_text(family='Times',size=10),
         legend.position = 'none')
-ggsave("figures/cd_pca_wheel.jpg", dpi=500, units='cm', width=14, height=14)
+ggsave("figures/cd_pca_wheelV2.jpg", dpi=500, units='cm', width=14, height=14)
 
 #PCA: Pessoais-----------------
-setp<-set[c('cp01','cp02','cp03','cp04')]
+setp<-set[c('cp01','cp02','cp03','cp04','cp05')]
 pc<-prcomp(setp,scale = TRUE)
 
 
 fviz_screeplot(pc, choice='eigenvalue', geom='line')+
   ylab('Variância')+xlab('PCs')+ggtitle(NULL)+
   geom_hline(yintercept=1, linetype='dashed')
-ggsave('figures/cp_pca_scree_.jpg', width=15, heigh=8, units='cm',dpi=150)
+ggsave('figures/cp_pca_screeV2.jpg', width=15, heigh=8, units='cm',dpi=150)
 
 
 #Roda PCA
@@ -131,17 +154,17 @@ fviz_pca_var(pc,axes = c(1,2),
              title='')+
   theme(text=element_text(family='Times',size=10),
         legend.position = 'none')
-ggsave("figures/cp_pca_wheel.jpg", dpi=500, units='cm', width=14, height=14)
+ggsave("figures/cp_pca_wheelV2.jpg", dpi=500, units='cm', width=14, height=14)
 
 #PCA: Infraestrutura-----------------
-seti<-set[c('ci01','ci02','ci03')]
+seti<-set[c('ci01','ci02','ci03','ci04')]
 pc<-prcomp(seti,scale = TRUE)
 
 
 fviz_screeplot(pc, choice='eigenvalue', geom='line')+
   ylab('Variância')+xlab('PCs')+ggtitle(NULL)+
   geom_hline(yintercept=1, linetype='dashed')
-ggsave('figures/ci_pca_scree.jpg', width=15, heigh=8, units='cm',dpi=150)
+ggsave('figures/ci_pca_screeV2.jpg', width=15, heigh=8, units='cm',dpi=150)
 
 
 #Roda PCA
@@ -152,15 +175,30 @@ fviz_pca_var(pc,axes = c(1,2),
              title='')+
   theme(text=element_text(family='Times',size=10),
         legend.position = 'none')
-ggsave("figures/ci_pca_wheel.jpg", dpi=500, units='cm', width=14, height=14)
+ggsave("figures/ci_pca_wheelV2.jpg", dpi=500, units='cm', width=14, height=14)
 
 
-#MDS----------------
-set<-set[complete.cases(set),4:8]
-set_scale<-scale(set)
-summary(set)
+#MDS: Pessoais----------------
+mdsp<-set[complete.cases(set),c('cp01','cp02','cp03','cp04','cp05')]
+set_scale<-scale(mdsp)
 d <- dist(set_scale) # euclidean distances between the rows
-save.image()
-fit<-mds(d,type='ratio')
-plot(fit, plot.type = "Shepard",
+
+fitp<-mds(d,type='interval')
+fitp
+jpeg('figures/mds_pessoas.jpg',width=15,height = 10,units='cm',res=300)
+plot(fitp, plot.type = "Shepard",
      main = "Shepard Diagram (Interval MDS)")
+dev.off()
+
+#MDS: Infraestrutura----------------
+mdsi<-set[complete.cases(set),c('ci01','ci02','ci03','ci04')]
+
+set_scale<-scale(mdsi)
+d <- dist(set_scale) # euclidean distances between the rows
+
+fiti<-mds(d,type='interval')
+fiti
+jpeg('figures/mds_infra.jpg',width=15,height = 10,units='cm',res=300)
+plot(fiti, plot.type = "Shepard",
+     main = "Shepard Diagram (Interval MDS)")
+dev.off()
