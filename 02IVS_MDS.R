@@ -51,6 +51,30 @@ set<-set[complete.cases(set),] #mantem apenas os registros que possuem valores v
 #selecionando um numero randômico de observações para possibilitar o MDS
 # set<-set%>%group_by(cod_region)%>%sample_n(1000)
 
+#MDS: Geral----------------
+mds<-set[complete.cases(set),c('cp01','cp02','cp03','cp04','cp05','cd01','cd02',
+                               'ci01','ci02','ci03','ci04')]
+set_scale<-scale(mds)
+
+#Modo R
+dr<-dist(t(set_scale))
+fit<-mds(dr,type='ratio')
+
+fit$delta
+fit$stress
+summary(fit)
+
+jpeg('figures/mds_dim_all_modoR.jpg',width=15,height = 10,units='cm',res=300)
+plot(fit, plot.dim = c(1,2), main = "MDS: Todas as Variáveis")
+dev.off()
+
+jpeg('figures/mds_shep_all_modoR.jpg',width=15,height = 10,units='cm',res=300)
+plot(fit, plot.type = "Shepard",
+     main = "Todas as Variáveis (11 variáveis)")
+dev.off()
+
+
+
 #MDS: Condições Pessoais e de Domicílios----------------
 mdsp<-set[complete.cases(set),c('cp01','cp02','cp03','cp04','cp05','cd01','cd02')]
 set_scale<-scale(mdsp)
