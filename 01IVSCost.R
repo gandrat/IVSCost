@@ -90,14 +90,14 @@ ggplot(set.m,aes(x=value))+geom_histogram()+
 
 #Correlograma-------------------
 
-M<-cor(set[4:14],method='spearman')
+M<-cor(set,method='spearman')
 
 jpeg('figures/correlograma_varbrutasV2.jpg',width=25,height = 25,units='cm',res=300)
 corrplot(M,type='upper',method = 'number')
 dev.off()
 
 #PCA: Geral-----------
-pc<-prcomp(set[4:14],scale = TRUE)
+pc<-prcomp(set,scale = TRUE)
 
 fviz_screeplot(pc, choice='eigenvalue', geom='line')+
   ylab('Variância')+xlab('PCs')+ggtitle(NULL)+
