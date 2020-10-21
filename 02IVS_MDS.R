@@ -13,7 +13,7 @@ rm(list=ls()) ## Removendo as variáveis
 # install_github("kassambara/factoextra")
 
 ##
-packages<-c('ggplot2','readxl','dplyr','sf','corrplot','factoextra','reshape','smacof','gdata')
+packages<-c('ggplot2','readxl','dplyr','sf','corrplot','factoextra','reshape','smacof','gdata','fifer')
 package.check <- lapply(packages, FUN = function(x) {
   if (!require(x, character.only = TRUE)) {
     install.packages(x, dependencies = TRUE)
@@ -26,6 +26,8 @@ load('input_data/descritores_IVSCostV2.RData')
 
 #V2: Selecionando  variáveis--------------
 set<-setores%>%transmute(cod_setor=cod_setor,
+                         cod_state=substring(cod_mun,1,2),
+                         cod_region=substring(cod_mun,1,1),
                          cod_mun=cod_mun,
                          nome_mun=nome,
                          cd01=mordom,
@@ -43,6 +45,8 @@ set<-setores%>%transmute(cod_setor=cod_setor,
                          ci03=(poptotal-ccoletalixo)/poptotal,
                          ci04=sempav/poptotal
 )
+unique(set$cod_region)
+
 keep(set, sure=T)
 
 
@@ -51,10 +55,10 @@ keep(set, sure=T)
 #Removendo setores com percentuais maiores que 1
 set<-set%>%filter(cd02<=1,  cp01<=1,cp02<=1,cp03<=1, ci01<=1,
                        ci02<=1,ci03<=1)
-set<-set[complete.cases(set),4:14] #mantem apenas os registros que possuem valores válidos em TODAS as variáveis
+set<-set[complete.cases(set),] #mantem apenas os registros que possuem valores válidos em TODAS as variáveis
 
 #selecionando um numero randômico de observações para possibilitar o MDS
-set<-sample_n(set,10000)
+set<-set%>%group_by(cod_region)%>%sample_n(1000)
 
 #MDS: Domicilios----------------
 
@@ -62,11 +66,11 @@ mdsd<-set[complete.cases(set),c('cd01','cd02')]
 set_scale<-scale(mdsd)
 d <- dist(set_scale) # euclidean distances between the rows
 
-fitd<-mds(d,type='interval')
+fitd<-mds(d,type='ratio')
 fitd
 jpeg('figures/mds_domicilios.jpg',width=15,height = 10,units='cm',res=300)
 plot(fitd, plot.type = "Shepard",
-     main = "Shepard Diagram (Interval MDS)")
+     main = "Shepard Diagram (ratio MDS)")
 dev.off()
 
 #MDS: Pessoais----------------
@@ -74,11 +78,11 @@ mdsp<-set[complete.cases(set),c('cp01','cp02','cp03','cp04','cp05')]
 set_scale<-scale(mdsp)
 d <- dist(set_scale) # euclidean distances between the rows
 
-fitp<-mds(d,type='interval')
+fitp<-mds(d,type='ratio')
 fitp
 jpeg('figures/mds_pessoas.jpg',width=15,height = 10,units='cm',res=300)
 plot(fitp, plot.type = "Shepard",
-     main = "Shepard Diagram (Interval MDS)")
+     main = "Shepard Diagram (ratio MDS)")
 dev.off()
 
 #MDS: Infraestrutura----------------
@@ -88,11 +92,11 @@ mdsi<-set[complete.cases(set),c('ci01','ci02','ci03','ci04')]
 set_scale<-scale(mdsi)
 d <- dist(set_scale) # euclidean distances between the rows
 
-fiti<-mds(d,type='interval')
+fiti<-mds(d,type='ratio')
 fiti
 jpeg('figures/mds_infra.jpg',width=15,height = 10,units='cm',res=300)
 plot(fiti, plot.type = "Shepard",
-     main = "Shepard Diagram (Interval MDS)")
+     main = "Shepard Diagram (ratio MDS)")
 dev.off()
 rm(d)
 save.image('output_data/mds.RData')
