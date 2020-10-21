@@ -76,8 +76,8 @@ write.csv(set,'output_data/setores_pca_ivscost_v2.csv')
 summary(set)
 set<-set%>%filter(cd02<=1,  cp01<=1,cp02<=1,cp03<=1, ci01<=1,
                        ci02<=1,ci03<=1)
-set<-set[complete.cases(set),4:15] #mantem apenas os registros que possuem valores válidos em TODAS as variáveis
-summary(set[4:14])
+set<-set[complete.cases(set),4:14] #mantem apenas os registros que possuem valores válidos em TODAS as variáveis
+summary(set)
 nrow(setores)-nrow(set)
 
 #Histogramas
