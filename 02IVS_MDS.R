@@ -54,12 +54,12 @@ set<-set%>%filter(cd02<=1,  cp01<=1,cp02<=1,cp03<=1, ci01<=1,
 set<-set[complete.cases(set),4:14] #mantem apenas os registros que possuem valores válidos em TODAS as variáveis
 
 #selecionando um numero randômico de observações para possibilitar o MDS
-sample_n(set,5000)
+set<-sample_n(set,10000)
 
 #MDS: Domicilios----------------
 
 mdsd<-set[complete.cases(set),c('cd01','cd02')]
-set_scale<-scale(mdsp)
+set_scale<-scale(mdsd)
 d <- dist(set_scale) # euclidean distances between the rows
 
 fitd<-mds(d,type='interval')
