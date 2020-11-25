@@ -1,6 +1,7 @@
 #Obtenção de Variáveis do Censo para o cálculo do Índice de Vulnerabilidade Social Costeiro
 #Aplicação nos municípios costeiros do Brasil
 #Menor unidade de análise: setor censitário
+#Dados e shapes da divisão política de 2010
 
 
 #Carregando pacotes------------
@@ -25,7 +26,7 @@ coast_states<-as.numeric(unique(substring(m$GEOCODIGO,0,2)))
 # coast_mun<-append(coast_mun,"4202305")
 
 
-#Shapefile: setores de 2010--------------
+#Shape Setores--------------
 #Os dados daque em diante não estão no projeto do github, por questões de espaço de armazenamento
 files<-list.files('/home/gandra/github/censoIBGE/input_data/IBGE_raw_data/setores',
                   pattern = ".shp",full.names = T)
@@ -40,7 +41,10 @@ for(i in 1:length(files)){
   df<-df%>%transmute(cod_setor=as.numeric(CD_GEOCODI),
                      cod_uf=as.numeric(substring(df$CD_GEOCODI,1,2)),
                      tipo=TIPO,
-                     cod_mun=CD_GEOCODM,nome_mun=NM_MUNICIP,
+                     nm_meso=NM_MESO,
+                     nm_micro=NM_MICRO,
+                     cod_mun=CD_GEOCODM,
+                     nm_mun=NM_MUNICIP,
                      geometry=geometry)
   
   # plot(df[5])
@@ -60,6 +64,112 @@ write_sf(set_sf,"output_data/setores_costeiros.shp",delete_layer = T)
 #Fazendo um índice dos codigos dos setores para eliminar das análise futuras
 coast_setor<-set_sf$cod_setor
 
+#Shape Mesoregiões-----------
+files<-list.files('/home/gandra/github/censoIBGE/input_data/mesoregioes_shp',
+                  pattern = ".shp",full.names = T, recursive = T)
+
+m<-list()
+i=1
+for(i in 1:length(files)){
+  print(files[i])
+  df<-read_sf(files[i],options="ENCODING=Windows-1252")
+  df<-st_transform(df,crs=4674)
+  # substring(df$CD_GEOCODM,1,2)
+  # plot(df)
+  df<-df%>%transmute(nm_meso=NM_MESO,
+                     cod_uf=as.numeric(df$CD_GEOCODU),
+                     geometry=geometry)
+  
+  # plot(df[5])
+  m[[i]] <- df
+}
+
+meso_sf = as.data.frame(do.call(rbind, m))
+meso_sf = st_sf(meso_sf)
+
+meso_sf<-meso_sf%>%filter(nm_meso %in% set_sf$nm_meso)
+plot(meso_sf)
+
+
+#Shape Estados-----------
+files<-list.files('/home/gandra/github/censoIBGE/input_data/estados_shp',
+                  pattern = ".shp",full.names = T, recursive = T)
+
+m<-list()
+i=1
+for(i in 1:length(files)){
+  print(files[i])
+  df<-read_sf(files[i],options="ENCODING=Windows-1252")
+  df<-st_transform(df,crs=4674)
+  # substring(df$CD_GEOCODM,1,2)
+  plot(df)
+  df<-df%>%transmute(cod_uf=as.numeric(df$CD_GEOCODU),
+                     nm_uf=NM_ESTADO,
+                     nm_regiao=NM_REGIAO,
+                     geometry=geometry)
+  
+  # plot(df[5])
+  m[[i]] <- df
+}
+
+uf_sf = as.data.frame(do.call(rbind, m))
+uf_sf = st_sf(uf_sf)
+
+uf_sf<-uf_sf%>%filter(cod_uf %in% set_sf$cod_uf)
+plot(uf_sf)
+
+
+#Shape Micro-----------
+files<-list.files('/home/gandra/github/censoIBGE/input_data/microregioes_shp',
+                  pattern = ".shp",full.names = T, recursive = T)
+
+m<-list()
+i=1
+for(i in 1:length(files)){
+  print(files[i])
+  df<-read_sf(files[i],options="ENCODING=Windows-1252")
+  df<-st_transform(df,crs=4674)
+  # substring(df$CD_GEOCODM,1,2)
+  # plot(df)
+  df<-df%>%transmute(cod_uf=as.numeric(df$CD_GEOCODU),
+                     nm_micro=NM_MICRO,
+                     geometry=geometry)
+  
+  # plot(df[5])
+  m[[i]] <- df
+}
+
+micro_sf = as.data.frame(do.call(rbind, m))
+micro_sf = st_sf(micro_sf)
+
+micro_sf<-micro_sf%>%filter(nm_micro %in% set_sf$nm_micro, cod_uf %in% set_sf$cod_uf)
+plot(micro_sf)
+
+#Shape Municipios-----------
+files<-list.files('/home/gandra/github/censoIBGE/input_data/municipios_shp',
+                  pattern = ".shp",full.names = T, recursive = T)
+
+m<-list()
+i=1
+for(i in 1:length(files)){
+  print(files[i])
+  df<-read_sf(files[i],options="ENCODING=Windows-1252")
+  df<-st_transform(df,crs=4674)
+  # substring(df$CD_GEOCODM,1,2)
+  df<-df%>%transmute(cod_mun=as.numeric(df$CD_GEOCODM),
+                     nm_mun=NM_MUNICIP,
+                     geometry=geometry)
+  m[[i]] <- df
+}
+
+muni_sf = as.data.frame(do.call(rbind, m))
+muni_sf = st_sf(muni_sf)
+
+muni_sf<-muni_sf%>%filter(cod_mun %in% set_sf$cod_mun)
+plot(muni_sf)
+
+save(set_sf,meso_sf,uf_sf,micro_sf,muni_sf,file = 'output_data/malha_territorial_sf.Rda')
+############################################################
 #Básico----------------
 files<-list.files('/home/gandra/github/censoIBGE/input_data/IBGE_raw_data',
                   pattern = "Basico",full.names = T)
@@ -244,3 +354,5 @@ keep(setores,setores_sf,sure = T)
 write.csv(setores,"output_data/setores_indicadoresV2.csv")
 write_sf(setores_sf,"output_data/setores_indicadoresV2.shp")
 save.image('input_data/descritores_IVSCostV2.RData')
+
+
