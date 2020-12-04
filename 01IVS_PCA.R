@@ -275,17 +275,29 @@ ggsave('figures/boxplots_pc_v4.jpg',dpi=200, units='cm', width=15, height=14)
 #Montando o SHP com as malhas-----------------
 setores<-merge(set_sf,setores%>%select(-cod_mun,-nome_mun,-cod_state), by='cod_setor')
 
-#Setores
+#Setores (Centroide)
+setores_pt<-setores
+setores_pt$geometry<-st_centroid(setores_pt$geometry)
+
+plot(setores_pt)
+
+write_sf(setores,'output_data/setores_pc.shp')
+write_sf(setores_pt,'output_data/setores_pt_pc.shp')
+
 setores2<-setores
 setores2$geometry<-NULL
+
+max(setores$cp_pc1)
+#Municipios
+
 muni<-setores2%>%select(-tipo,-cod_setor)%>%
   group_by(cod_mun,nm_mun,nm_micro,nm_meso,cod_uf,cod_regiao,regiao)%>%
   summarise_all(~ mean(.x, na.rm = TRUE))
 
 muni<-merge(muni_sf,muni,by=c('cod_mun','nm_mun'))
-write_sf(muni,'output_data/setores_pc.shp')
+write_sf(muni,'output_data/municipios_pc.shp')
 
-plot(muni%>%select(cp_pc1))
+
 
 
 #Microrregiões
@@ -317,3 +329,5 @@ uf<-merge(uf_sf,uf,by=c('cod_uf'))
 write_sf(uf,'output_data/uf_pc.shp')
 
 plot(uf%>%select(cp_pc1))
+
+
