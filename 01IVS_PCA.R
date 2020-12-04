@@ -134,10 +134,6 @@ ggbiplot(pc, choices=c(1,2), obs.scale = 1, var.scale = 1,
 ggsave("figures/pca_biplot_v4.jpg",dpi=300, units = 'cm', width = 14, height = 14)
 
 #Calculando o IVS: Condições pessoais
-pc$rotation
-ivsp<-as.data.frame(pc$x)
-
-set$ivsp=pc$x
 
 
 #PCA: Pessoais-----------------
@@ -243,16 +239,7 @@ ggsave("figures/ci_biplot_V4.jpg",dpi=300, units = 'cm', width = 14, height = 14
 
 #Montando tabela com TODOS os dados---------
 #Padronização Z
-setores<-set%>%mutate(cd01n=as.numeric(scale(cd01)),
-                      cd02n=as.numeric(scale(cd02)),
-                      cp01n=as.numeric(scale(cp01)),
-                      cp02n=as.numeric(scale(cp02)),
-                      cp03n=as.numeric(scale(cp03)),
-                      cp04n=as.numeric(scale(cp04)),
-                      ci01n=as.numeric(scale(ci01)),
-                      ci02n=as.numeric(scale(ci02)),
-                      ci03n=as.numeric(scale(ci03)),
-                      ci04n=as.numeric(scale(ci04)))
+setores<-set%>%mutate(cd01n=(cd01-min(cd01))/(max(cd01)-min(cd01)))
 
 summary(setores)
 
@@ -263,12 +250,18 @@ pc_ci<-pcinfra%>%transmute(ci_pc1=PC1,
 pc_cp<-pcpessoais%>%transmute(cp_pc1=PC1,
                            cp_pc2=PC2,
                            cp_pc3=PC3)
-setores<-cbind(setores,pc_cp,pc_ci)
+pc_g<-pcgeral%>%transmute(all_pc1=PC1,
+                              all_pc2=PC2,
+                              all_pc3=PC3)
 
+setores<-cbind(setores,pc_cp,pc_ci,pc_g)
+
+head(setores)
 #Boxplot das componentes principais
-setores.m<-melt(setores%>%select(regiao,cp_pc1,cp_pc2,ci_pc1,ci_pc2))
+setores.m<-melt(setores%>%select(regiao,cp_pc1,cp_pc2,ci_pc1,
+                                 ci_pc2,all_pc1,all_pc2))
 ggplot(setores.m,aes(x=regiao,y=value))+geom_boxplot(outlier.size=.2)+
-  facet_wrap(~variable,scales='free')+
+  facet_wrap(~variable,scales='free',nrow=3)+
   theme_bw()+xlab(NULL)+ylab(NULL)
 ggsave('figures/boxplots_pc_v4.jpg',dpi=200, units='cm', width=15, height=14)
 
@@ -279,8 +272,8 @@ setores<-merge(set_sf,setores%>%select(-cod_mun,-nome_mun,-cod_state), by='cod_s
 setores_pt<-setores
 setores_pt$geometry<-st_centroid(setores_pt$geometry)
 
-plot(setores_pt)
-
+# plot(setores_pt)
+# plot(setores)
 write_sf(setores,'output_data/setores_pc.shp')
 write_sf(setores_pt,'output_data/setores_pt_pc.shp')
 
