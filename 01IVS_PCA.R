@@ -26,6 +26,12 @@ package.check <- lapply(packages, FUN = function(x) {
 
 rm(list=ls()) ## Limpando o workspace
 
+
+theme_set(
+  theme_bw(base_size = 10)+
+    theme(text=element_text(family="Times"))
+)
+
 ##Carregando os dados---------------
 load('input_data/descritores_IVSCostV2.RData')
 load('output_data/malha_territorial_sf.Rda')
@@ -57,33 +63,25 @@ set<-set%>%mutate(regiao=case_when(cod_regiao==1 ~ 'N',
                                    cod_regiao==2 ~ 'NE',
                                    cod_regiao==3 ~ 'SE',
                                    cod_regiao==4 ~ 'S')) 
+set<-set%>%mutate(cd01=(cd01-min(cd01))/(max(cd01)-min(cd01)))
 
-# set<-setores%>%transmute(cod_setor=cod_setor,cod_mun=cod_mun,nome_mun=nome,cd01=mordom,cd02=domalug/poptotal,cd03=renda,cd04=abaixopob/ndom,cd05=srenda/ndom,cp01=mulheres/poptotal,cp02=(criancas+idosos)/poptotal,cp03=raca/poptotal,cp04=pmais5-alfabet,ci01=(poptotal-cagua)/poptotal,ci02=(poptotal-cbanhesg)/poptotal,ci03=(poptotal-ccoletalixo)/poptotal,ci04=senergia/poptotal)
-table(set$regiao)
 
-write.csv(set,'output_data/setores_pca_ivscost_v4.csv')
 
-#Carregando shapes (estados, mesoregiões, municipios)
 #Removendo setores com percentuais maiores que 1
 summary(set)
 set<-set%>%filter(cd02<=1,cp02<=1,cp03<=1, ci01<=1,
                        ci02<=1,ci03<=1)
 set<-set[complete.cases(set),] #mantem apenas os registros que possuem valores válidos em TODAS as variáveis
 
-seti<-set%>%select(-cod_setor,-cod_mun, -cod_state, -nome_mun,  -cod_regiao)
+seti<-set%>%select(-cod_mun, -cod_state, -nome_mun,  -cod_regiao, -regiao)
 
 
 #Histogramas---------------
-set.m<-melt(seti)
+set.m<-melt(seti,id='cod_setor')
 ggplot(set.m,aes(x=value))+geom_histogram()+
   facet_wrap(~variable,scales='free',ncol = 3)+
   theme_bw()+xlab(NULL)+ylab(NULL)
-ggsave('figures/histogramas_v4.jpg',dpi=200, units='cm', width=15, height=14)
-
-ggplot(set.m,aes(x=regiao,y=value))+geom_boxplot(outlier.size=.1)+
-  facet_wrap(~variable,scales='free',ncol = 3)+
-  theme_bw()+xlab(NULL)+ylab(NULL)
-ggsave('figures/boxplot_regiao_v4.jpg',dpi=200, units='cm', width=15, height=14)
+ggsave('figures/histogramas_v5.jpg',dpi=200, units='cm', width=15, height=14)
 
 #Correlograma-------------------
 seti<-seti%>%select(-regiao)
@@ -95,7 +93,7 @@ corrplot(M,type='upper',method = 'number')
 dev.off()
 
 #PCA: Geral-----------
-pc<-prcomp(seti,scale = TRUE)
+pc<-prcomp(seti[-1],scale = TRUE)
 
 summary(pc)
 
@@ -109,7 +107,7 @@ pcgeral<-as.data.frame(pc$x)
 fviz_screeplot(pc, choice='eigenvalue', geom='line')+
   ylab('Variância')+xlab('PCs')+ggtitle(NULL)+
   geom_hline(yintercept=1, linetype='dashed')
-ggsave('figures/pca_screeV4.jpg', width=15, heigh=8, units='cm',dpi=150)
+ggsave('figures/pca_screeV5.jpg', width=15, heigh=8, units='cm',dpi=150)
 
 #Roda PCA
 fviz_pca_var(pc,axes = c(1,2),
@@ -119,7 +117,7 @@ fviz_pca_var(pc,axes = c(1,2),
              title='')+
   theme(text=element_text(family='Times',size=10),
         legend.position = 'none')
-ggsave("figures/pca_wheelV4.jpg", dpi=500, units='cm', width=14, height=14)
+ggsave("figures/pca_wheelV5.jpg", dpi=500, units='cm', width=14, height=14)
 
 #Biplot
 ggbiplot(pc, choices=c(1,2), obs.scale = 1, var.scale = 1,
@@ -131,7 +129,7 @@ ggbiplot(pc, choices=c(1,2), obs.scale = 1, var.scale = 1,
   # theme(legend.direction = 'horizontal', legend.position = 'top')+
   theme_bw()
 
-ggsave("figures/pca_biplot_v4.jpg",dpi=300, units = 'cm', width = 14, height = 14)
+ggsave("figures/pca_biplot_v5.jpg",dpi=300, units = 'cm', width = 14, height = 14)
 
 #Calculando o IVS: Condições pessoais
 
@@ -152,7 +150,7 @@ pcpessoais<-as.data.frame(pc$x)
 fviz_screeplot(pc, choice='eigenvalue', geom='line')+
   ylab('Variância')+xlab('PCs')+ggtitle(NULL)+
   geom_hline(yintercept=1, linetype='dashed')
-ggsave('figures/cpd_pca_screeV4.jpg', width=15, heigh=8, units='cm',dpi=150)
+ggsave('figures/cpd_pca_screeV5.jpg', width=15, heigh=8, units='cm',dpi=150)
 
 
 #Roda PCA
@@ -163,7 +161,7 @@ fviz_pca_var(pc,axes = c(1,2),
              title='')+
   theme(text=element_text(family='Times',size=10),
         legend.position = 'none')
-ggsave("figures/cpd_pca_wheelV4.jpg", dpi=500, units='cm', width=14, height=14)
+ggsave("figures/cpd_pca_wheelV5.jpg", dpi=500, units='cm', width=14, height=14)
 summary(pc)
 
 #Biplot
@@ -177,7 +175,7 @@ ggbiplot(pc,choices=c(1,2),
   # theme(legend.direction = 'horizontal', legend.position = 'top')+
   theme_bw()
 
-ggsave("figures/cpd_biplot_v4.jpg",dpi=300, units = 'cm', width = 14, height = 14)
+ggsave("figures/cpd_biplot_v5.jpg",dpi=300, units = 'cm', width = 14, height = 14)
 
 #Facet por estados
 ggbiplot(pc,choices=c(1,2),
@@ -207,7 +205,7 @@ pcinfra<-as.data.frame(pc$x)
 fviz_screeplot(pc, choice='eigenvalue', geom='line')+
   ylab('Variância')+xlab('PCs')+ggtitle(NULL)+
   geom_hline(yintercept=1, linetype='dashed')
-ggsave('figures/ci_pca_screeV4.jpg', width=15, heigh=8, units='cm',dpi=150)
+ggsave('figures/ci_pca_screeV5.jpg', width=15, heigh=8, units='cm',dpi=150)
 
 
 
@@ -219,7 +217,7 @@ fviz_pca_var(pc,axes = c(1,2),
              title='')+
   theme(text=element_text(family='Times',size=10),
         legend.position = 'none')
-ggsave("figures/ci_pca_wheelV4.jpg", dpi=500, units='cm', width=14, height=14)
+ggsave("figures/ci_pca_wheelV5.jpg", dpi=500, units='cm', width=14, height=14)
 
 #Biplot
 ggbiplot(pc,choices=c(1,2),
@@ -233,15 +231,9 @@ ggbiplot(pc,choices=c(1,2),
   theme_bw()
 
 
-ggsave("figures/ci_biplot_V4.jpg",dpi=300, units = 'cm', width = 14, height = 14)
+ggsave("figures/ci_biplot_V5.jpg",dpi=300, units = 'cm', width = 14, height = 14)
 
 
-
-#Montando tabela com TODOS os dados---------
-#Padronização Z
-setores<-set%>%mutate(cd01n=(cd01-min(cd01))/(max(cd01)-min(cd01)))
-
-summary(setores)
 
 #Merge entre PCAs e setores-------------
 pc_ci<-pcinfra%>%transmute(ci_pc1=PC1,
@@ -254,73 +246,181 @@ pc_g<-pcgeral%>%transmute(all_pc1=PC1,
                               all_pc2=PC2,
                               all_pc3=PC3)
 
-setores<-cbind(setores,pc_cp,pc_ci,pc_g)
+seti<-cbind(seti,pc_cp,pc_ci,pc_g)
 
-head(setores)
-#Boxplot das componentes principais
-setores.m<-melt(setores%>%select(regiao,cp_pc1,cp_pc2,ci_pc1,
-                                 ci_pc2,all_pc1,all_pc2))
-ggplot(setores.m,aes(x=regiao,y=value))+geom_boxplot(outlier.size=.2)+
-  facet_wrap(~variable,scales='free',nrow=3)+
-  theme_bw()+xlab(NULL)+ylab(NULL)
-ggsave('figures/boxplots_pc_v4.jpg',dpi=200, units='cm', width=15, height=14)
+
+
+#Cálculo do IVS Opção 2-----------------------
+
+#Média ponderada pela participação de cada pc
+seti<-seti%>%mutate(ivs2=cp_pc1*0.72+cp_pc2*.28+ci_pc1*.66+ci_pc2*.34)
+
+#Selecionando variáveis originais e IVS
+set.m<-seti[c(1:10,20)]
+set.m<-melt(set.m,id='ivs2')
+
+ggplot(set.m,aes(x=ivs2,y=value))+geom_smooth()+
+  # geom_point(size=.05,alpha=.5)+
+  facet_wrap(~variable,scales='free_y', ncol=5)+
+  xlab('IVS')+ylab('Normalized Values')
+ggsave("figures/ivs2Xvar_smooth.jpg",dpi=300, units = 'cm', width = 15, height = 12)
+
+ggplot(set.m,aes(x=ivs2,y=value))+geom_smooth()+
+  geom_point(alpha=.1,size=.05)
+
+#Coeficiente de Determinação R2
+cd01.lm<-lm(cd01 ~ ivs2, data=seti)
+summary(cd01.lm)
+
+cd02.lm<-lm(cd02 ~ ivs2, data=seti)
+summary(cd02.lm)
+
+cp01.lm<-lm(cp01 ~ ivs2, data=seti)
+summary(cp01.lm)
+
+cp02.lm<-lm(cp02 ~ ivs2, data=seti)
+summary(cp02.lm)
+
+cp03.lm<-lm(cp03 ~ ivs2, data=seti)
+summary(cp03.lm)
+
+cp04.lm<-lm(cp04 ~ ivs2, data=seti)
+summary(cp04.lm)
+
+ci01.lm<-lm(ci01 ~ ivs2, data=seti)
+summary(ci01.lm)
+
+ci02.lm<-lm(ci02 ~ ivs2, data=seti)
+summary(ci02.lm)
+
+ci03.lm<-lm(ci03 ~ ivs2, data=seti)
+summary(ci03.lm)
+
+ci04.lm<-lm(ci04 ~ ivs2, data=seti)
+summary(ci04.lm)
+
+#Cálculo do IVS Opção 1-----------------------
+
+#Média ponderada pela participação de cada pc
+seti<-seti%>%mutate(ivs1=all_pc1*0.63+all_pc2*.19+all_pc3*.14)
+
+#Coeficiente de Determinação R2----------
+cd01.lm<-lm(cd01 ~ ivs1, data=seti)
+summary(cd01.lm)
+
+cd02.lm<-lm(cd02 ~ ivs1, data=seti)
+summary(cd02.lm)
+
+cp01.lm<-lm(cp01 ~ ivs1, data=seti)
+summary(cp01.lm)
+
+cp02.lm<-lm(cp02 ~ ivs1, data=seti)
+summary(cp02.lm)
+
+cp03.lm<-lm(cp03 ~ ivs1, data=seti)
+summary(cp03.lm)
+
+cp04.lm<-lm(cp04 ~ ivs1, data=seti)
+summary(cp04.lm)
+
+ci01.lm<-lm(ci01 ~ ivs1, data=seti)
+summary(ci01.lm)
+
+ci02.lm<-lm(ci02 ~ ivs1, data=seti)
+summary(ci02.lm)
+
+ci03.lm<-lm(ci03 ~ ivs1, data=seti)
+summary(ci03.lm)
+
+ci04.lm<-lm(ci04 ~ ivs1, data=seti)
+summary(ci04.lm)
+
+#Coeficiente de Determinação R2 - PC1----------
+cd01.lm<-lm(cd01 ~ all_pc1, data=seti)
+summary(cd01.lm)
+
+cd02.lm<-lm(cd02 ~ all_pc1, data=seti)
+summary(cd02.lm)
+
+cp01.lm<-lm(cp01 ~ all_pc1, data=seti)
+summary(cp01.lm)
+
+cp02.lm<-lm(cp02 ~ all_pc1, data=seti)
+summary(cp02.lm)
+
+cp03.lm<-lm(cp03 ~ all_pc1, data=seti)
+summary(cp03.lm)
+
+cp04.lm<-lm(cp04 ~ all_pc1, data=seti)
+summary(cp04.lm)
+
+ci01.lm<-lm(ci01 ~ all_pc1, data=seti)
+summary(ci01.lm)
+
+ci02.lm<-lm(ci02 ~ all_pc1, data=seti)
+summary(ci02.lm)
+
+ci03.lm<-lm(ci03 ~ all_pc1, data=seti)
+summary(ci03.lm)
+
+ci04.lm<-lm(ci04 ~ all_pc1, data=seti)
+summary(ci04.lm)
+
+#Boxplot das componentes principais-----------
+# setores.m<-melt(setores%>%select(regiao,cp_pc1,cp_pc2,ci_pc1,
+#                                  ci_pc2,all_pc1,all_pc2))
+# ggplot(setores.m,aes(x=regiao,y=value))+geom_boxplot(outlier.size=.2)+
+#   facet_wrap(~variable,scales='free',nrow=3)+
+#   theme_bw()+xlab(NULL)+ylab(NULL)
+# ggsave('figures/boxplots_pc_v4.jpg',dpi=200, units='cm', width=15, height=14)
 
 #Montando o SHP com as malhas-----------------
-setores<-merge(set_sf,setores%>%select(-cod_mun,-nome_mun,-cod_state), by='cod_setor')
+setores<-merge(set_sf,setores, by=c('cod_setor'))
+setores<-merge(setores,seti,by=c('cod_setor'),all.x=T)
+head(setores)
 
-#Setores (Centroide)
-setores_pt<-setores
-setores_pt$geometry<-st_centroid(setores_pt$geometry)
 
-# plot(setores_pt)
-# plot(setores)
 write_sf(setores,'output_data/setores_pc.shp')
-write_sf(setores_pt,'output_data/setores_pt_pc.shp')
 
-setores2<-setores
-setores2$geometry<-NULL
+#Municipios-----------------
 
-max(setores$cp_pc1)
-#Municipios
-
-muni<-setores2%>%select(-tipo,-cod_setor)%>%
-  group_by(cod_mun,nm_mun,nm_micro,nm_meso,cod_uf,cod_regiao,regiao)%>%
+muni<-setores%>%select(-tipo,-cod_setor)%>%
+  group_by(nm_mun,nm_micro,nm_meso,cod_uf,cod_mun)%>%
   summarise_all(~ mean(.x, na.rm = TRUE))
 
 muni<-merge(muni_sf,muni,by=c('cod_mun','nm_mun'))
 write_sf(muni,'output_data/municipios_pc.shp')
 
-
-
-
 #Microrregiões
-micro<-setores2%>%select(-tipo,-cod_setor,-cod_mun,-nm_mun)%>%
-  group_by(nm_micro,nm_meso,cod_uf,cod_regiao,regiao)%>%
+micro<-setores%>%select(-tipo,-cod_setor,-cod_mun,-nm_mun)%>%
+  group_by(nm_micro,nm_meso,cod_uf)%>%
   summarise_all(~ mean(.x, na.rm = TRUE))
 
 micro<-merge(micro_sf,micro,by=c('nm_micro'))
 write_sf(micro,'output_data/micro_pc.shp')
 
 plot(micro%>%select(cp_pc1))
+plot(micro%>%select(ivs2))
 
 #Mesorregiões
-meso<-setores2%>%select(-tipo,-cod_setor,-cod_mun,-nm_mun,-nm_micro)%>%
-  group_by(nm_meso,cod_uf,cod_regiao,regiao)%>%
+meso<-setores%>%select(-tipo,-cod_setor,-cod_mun,-nm_mun,-nm_micro)%>%
+  group_by(nm_meso,cod_uf)%>%
   summarise_all(~ mean(.x, na.rm = TRUE))
 
 meso<-merge(meso_sf,meso,by=c('nm_meso'))
 write_sf(meso,'output_data/meso_pc.shp')
 
-plot(meso%>%select(cp_pc1))
 
 #Estados
-uf<-setores2%>%select(-tipo,-cod_setor,-cod_mun,-nm_mun,-nm_micro,-nm_meso)%>%
-  group_by(cod_uf,cod_regiao,regiao)%>%
+setores$geometry<-NULL
+uf<-setores%>%select(-tipo,-cod_setor,-cod_mun,-nm_mun,-nm_micro,-nm_meso)%>%
+  group_by(cod_uf)%>%
   summarise_all(~ mean(.x, na.rm = TRUE))
 
 uf<-merge(uf_sf,uf,by=c('cod_uf'))
 write_sf(uf,'output_data/uf_pc.shp')
 
-plot(uf%>%select(cp_pc1))
+setores<-merge(setores,setores_sf%>%select(cod_setor),by='cod_setor')
+save(meso,micro,muni,uf, setores,file='output_data/malha_territorial_ivs.Rda')
 
 
