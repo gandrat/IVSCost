@@ -16,13 +16,16 @@ rm(list=ls()) ## Removendo as variáveis
 # install_github("vqv/ggbiplot")
 
 ##
-packages<-c('ggplot2','readxl','dplyr','sf','corrplot','factoextra','reshape','smacof','gdata','ggbiplot')
+packages<-c('ggplot2','readxl','dplyr','sf','corrplot','factoextra','reshape','smacof','gdata', 'ggbiplot')
 package.check <- lapply(packages, FUN = function(x) {
   if (!require(x, character.only = TRUE)) {
     install.packages(x, dependencies = TRUE)
     library(x, character.only = TRUE)
   }
 })
+# Conferindo instalação de pacotes uma a um
+# library (ggplot2)
+# install.packages ("ggplot2")
 
 rm(list=ls()) ## Limpando o workspace
 
@@ -34,10 +37,10 @@ theme_set(
 
 ##Carregando os dados---------------
 load('input_data/descritores_IVSCostV2.RData')
-load('output_data/malha_territorial_sf.Rda')
+load('input_data/malha_territorial_sf.Rda')
 
 
-#V4: Selecionando  variáveis--------------
+#V5: Selecionando  variáveis--------------
 set<-setores%>%transmute(cod_setor=cod_setor,
                          cod_mun=cod_mun,
                          nome_mun=nome,
@@ -88,7 +91,7 @@ seti<-seti%>%select(-regiao)
 
 M<-cor(seti,method='pearson')
 
-jpeg('figures/correlograma_varbrutas_v4.jpg',width=15,height = 15,units='cm',res=300)
+jpeg('figures/correlograma_varbrutas_v5.jpg',width=15,height = 15,units='cm',res=300)
 corrplot(M,type='upper',method = 'number')
 dev.off()
 
@@ -134,7 +137,7 @@ ggsave("figures/pca_biplot_v5.jpg",dpi=300, units = 'cm', width = 14, height = 1
 #Calculando o IVS: Condições pessoais
 
 
-#PCA: Pessoais-----------------
+#PCA: Pessoais cp +cd -----------------
 setp<-seti[c('cp02','cp03','cp04','cp01','cd01','cd02')]
 pc<-prcomp(setp,scale = TRUE)
 
@@ -232,9 +235,15 @@ ggbiplot(pc,choices=c(1,2),
 
 
 ggsave("figures/ci_biplot_V5.jpg",dpi=300, units = 'cm', width = 14, height = 14)
+<<<<<<< HEAD
 
 
 
+=======
+
+
+
+>>>>>>> 9d85bf4dab0cfd2fd43d2fc46f6db6330fbc4ecb
 #Merge entre PCAs e setores-------------
 pc_ci<-pcinfra%>%transmute(ci_pc1=PC1,
                              ci_pc2=PC2,
@@ -248,6 +257,27 @@ pc_g<-pcgeral%>%transmute(all_pc1=PC1,
 
 seti<-cbind(seti,pc_cp,pc_ci,pc_g)
 
+<<<<<<< HEAD
+#Selecionando variáveis originais e IVS
+# set.m<-seti[c(1:10,20)]
+# set.m<-melt(set.m,id='ivs2')
+
+# ggplot(set.m,aes(x=ivs2,y=value))+geom_smooth()+
+  # geom_point(size=.05,alpha=.5)+
+  # facet_wrap(~variable,scales='free_y', ncol=5)+
+  # xlab('IVS')+ylab('Normalized Values')
+# ggsave("figures/ivs2Xvar_smooth.jpg",dpi=300, units = 'cm', width = 15, height = 12)
+
+# ggplot(set.m,aes(x=ivs2,y=value))+geom_smooth()+
+  # geom_point(alpha=.1,size=.05)
+
+#Cálculo do IVS Opção 1-----------------------
+
+#PC1 de todas as variáveis em conjunto
+seti<-seti%>%mutate(ivs1=all_pc1)
+
+#Coeficiente de Determinação R2 - IVS1---------------
+=======
 
 
 #Cálculo do IVS Opção 2-----------------------
@@ -305,6 +335,7 @@ summary(ci04.lm)
 seti<-seti%>%mutate(ivs1=all_pc1*0.63+all_pc2*.19+all_pc3*.14)
 
 #Coeficiente de Determinação R2----------
+>>>>>>> 9d85bf4dab0cfd2fd43d2fc46f6db6330fbc4ecb
 cd01.lm<-lm(cd01 ~ ivs1, data=seti)
 summary(cd01.lm)
 
@@ -335,6 +366,44 @@ summary(ci03.lm)
 ci04.lm<-lm(ci04 ~ ivs1, data=seti)
 summary(ci04.lm)
 
+<<<<<<< HEAD
+
+
+#Cálculo do IVS Opção 2-----------------------
+
+#Média da somas da PC1cpd e PC1ci
+seti<-seti%>%mutate(ivs2=(cp_pc1+ci_pc1)/2)
+
+#Coeficiente de Determinação R2 - IVS2----------
+cd01.lm<-lm(cd01 ~ ivs2, data=seti)
+summary(cd01.lm)
+
+cd02.lm<-lm(cd02 ~ ivs2, data=seti)
+summary(cd02.lm)
+
+cp01.lm<-lm(cp01 ~ ivs2, data=seti)
+summary(cp01.lm)
+
+cp02.lm<-lm(cp02 ~ ivs2, data=seti)
+summary(cp02.lm)
+
+cp03.lm<-lm(cp03 ~ ivs2, data=seti)
+summary(cp03.lm)
+
+cp04.lm<-lm(cp04 ~ ivs2, data=seti)
+summary(cp04.lm)
+
+ci01.lm<-lm(ci01 ~ ivs2, data=seti)
+summary(ci01.lm)
+
+ci02.lm<-lm(ci02 ~ ivs2, data=seti)
+summary(ci02.lm)
+
+ci03.lm<-lm(ci03 ~ ivs2, data=seti)
+summary(ci03.lm)
+
+ci04.lm<-lm(ci04 ~ ivs2, data=seti)
+=======
 #Coeficiente de Determinação R2 - PC1----------
 cd01.lm<-lm(cd01 ~ all_pc1, data=seti)
 summary(cd01.lm)
@@ -364,6 +433,7 @@ ci03.lm<-lm(ci03 ~ all_pc1, data=seti)
 summary(ci03.lm)
 
 ci04.lm<-lm(ci04 ~ all_pc1, data=seti)
+>>>>>>> 9d85bf4dab0cfd2fd43d2fc46f6db6330fbc4ecb
 summary(ci04.lm)
 
 #Boxplot das componentes principais-----------
@@ -375,11 +445,21 @@ summary(ci04.lm)
 # ggsave('figures/boxplots_pc_v4.jpg',dpi=200, units='cm', width=15, height=14)
 
 #Montando o SHP com as malhas-----------------
+<<<<<<< HEAD
+
+#Setores-----
 setores<-merge(set_sf,setores, by=c('cod_setor'))
 setores<-merge(setores,seti,by=c('cod_setor'),all.x=T)
 head(setores)
 
 
+=======
+setores<-merge(set_sf,setores, by=c('cod_setor'))
+setores<-merge(setores,seti,by=c('cod_setor'),all.x=T)
+head(setores)
+
+
+>>>>>>> 9d85bf4dab0cfd2fd43d2fc46f6db6330fbc4ecb
 write_sf(setores,'output_data/setores_pc.shp')
 
 #Municipios-----------------
@@ -391,7 +471,11 @@ muni<-setores%>%select(-tipo,-cod_setor)%>%
 muni<-merge(muni_sf,muni,by=c('cod_mun','nm_mun'))
 write_sf(muni,'output_data/municipios_pc.shp')
 
+<<<<<<< HEAD
+#Microrregiões------
+=======
 #Microrregiões
+>>>>>>> 9d85bf4dab0cfd2fd43d2fc46f6db6330fbc4ecb
 micro<-setores%>%select(-tipo,-cod_setor,-cod_mun,-nm_mun)%>%
   group_by(nm_micro,nm_meso,cod_uf)%>%
   summarise_all(~ mean(.x, na.rm = TRUE))
@@ -402,7 +486,11 @@ write_sf(micro,'output_data/micro_pc.shp')
 plot(micro%>%select(cp_pc1))
 plot(micro%>%select(ivs2))
 
+<<<<<<< HEAD
+#Mesorregiões-----
+=======
 #Mesorregiões
+>>>>>>> 9d85bf4dab0cfd2fd43d2fc46f6db6330fbc4ecb
 meso<-setores%>%select(-tipo,-cod_setor,-cod_mun,-nm_mun,-nm_micro)%>%
   group_by(nm_meso,cod_uf)%>%
   summarise_all(~ mean(.x, na.rm = TRUE))
@@ -411,7 +499,11 @@ meso<-merge(meso_sf,meso,by=c('nm_meso'))
 write_sf(meso,'output_data/meso_pc.shp')
 
 
+<<<<<<< HEAD
+#Estados-----
+=======
 #Estados
+>>>>>>> 9d85bf4dab0cfd2fd43d2fc46f6db6330fbc4ecb
 setores$geometry<-NULL
 uf<-setores%>%select(-tipo,-cod_setor,-cod_mun,-nm_mun,-nm_micro,-nm_meso)%>%
   group_by(cod_uf)%>%
