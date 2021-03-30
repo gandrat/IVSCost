@@ -428,19 +428,19 @@ ci04.lm<-lm(ci04 ~ all_pc1, data=seti)
 
 summary(ci04.lm)
 
-#Boxplot das componentes principais-----------
-# setores.m<-melt(setores%>%select(regiao,cp_pc1,cp_pc2,ci_pc1,
-#                                  ci_pc2,all_pc1,all_pc2))
-# ggplot(setores.m,aes(x=regiao,y=value))+geom_boxplot(outlier.size=.2)+
-#   facet_wrap(~variable,scales='free',nrow=3)+
-#   theme_bw()+xlab(NULL)+ylab(NULL)
-# ggsave('figures/boxplots_pc_v4.jpg',dpi=200, units='cm', width=15, height=14)
+
 
 #Montando o SHP com as malhas-----------------
 
 
 #Setores-----
-setores<-merge(set_sf,setores, by=c('cod_setor'))
+
+
+head(setores)#variáveis brutas
+head(seti)#PCA e IVS
+head(set_sf)#Geometria e tipo do setor
+
+setores<-merge(set_sf,setores, by=c('cod_setor','cod_mun'))
 setores<-merge(setores,seti,by=c('cod_setor'),all.x=T)
 head(setores)
 
@@ -448,60 +448,7 @@ head(setores)
 
 setores<-merge(set_sf,setores, by=c('cod_setor'))
 setores<-merge(setores,seti,by=c('cod_setor'),all.x=T)
-head(setores)
-
-
-
-write_sf(setores,'output_data/setores_pc.shp')
-
-#Municipios-----------------
-
-muni<-setores%>%select(-tipo,-cod_setor)%>%
-  group_by(nm_mun,nm_micro,nm_meso,cod_uf,cod_mun)%>%
-  summarise_all(~ mean(.x, na.rm = TRUE))
-
-muni<-merge(muni_sf,muni,by=c('cod_mun','nm_mun'))
-write_sf(muni,'output_data/municipios_pc.shp')
-
-
-#Microrregiões------
-
-micro<-setores%>%select(-tipo,-cod_setor,-cod_mun,-nm_mun)%>%
-  group_by(nm_micro,nm_meso,cod_uf)%>%
-  summarise_all(~ mean(.x, na.rm = TRUE))
-
-micro<-merge(micro_sf,micro,by=c('nm_micro'))
-write_sf(micro,'output_data/micro_pc.shp')
-
-plot(micro%>%select(cp_pc1))
-plot(micro%>%select(ivs2))
-
-
-#Mesorregiões-----
-
-#Mesorregiões
-
-meso<-setores%>%select(-tipo,-cod_setor,-cod_mun,-nm_mun,-nm_micro)%>%
-  group_by(nm_meso,cod_uf)%>%
-  summarise_all(~ mean(.x, na.rm = TRUE))
-
-meso<-merge(meso_sf,meso,by=c('nm_meso'))
-write_sf(meso,'output_data/meso_pc.shp')
-
-
-
-#Estados-----
-
 
 setores$geometry<-NULL
-uf<-setores%>%select(-tipo,-cod_setor,-cod_mun,-nm_mun,-nm_micro,-nm_meso)%>%
-  group_by(cod_uf)%>%
-  summarise_all(~ mean(.x, na.rm = TRUE))
 
-uf<-merge(uf_sf,uf,by=c('cod_uf'))
-write_sf(uf,'output_data/uf_pc.shp')
-
-setores<-merge(setores,setores_sf%>%select(cod_setor),by='cod_setor')
-save(meso,micro,muni,uf, setores,file='output_data/malha_territorial_ivs.Rda')
-
-
+save(setores,file='output_data/setores_ivs.Rda')
