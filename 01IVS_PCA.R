@@ -15,17 +15,19 @@ rm(list=ls()) ## Removendo as variáveis
 # library(devtools)
 # install_github("vqv/ggbiplot")
 
+# Conferindo instalação de pacotes uma a um
+# library (ggplot2)
+# install.packages ("ggplot2")
+
 ##
-packages<-c('ggplot2','readxl','dplyr','sf','corrplot','factoextra','reshape','smacof','gdata', 'ggbiplot')
+packages<-c('ggplot2','dplyr','corrplot','factoextra','reshape','smacof','gdata', 'ggbiplot')
 package.check <- lapply(packages, FUN = function(x) {
   if (!require(x, character.only = TRUE)) {
     install.packages(x, dependencies = TRUE)
     library(x, character.only = TRUE)
   }
 })
-# Conferindo instalação de pacotes uma a um
-# library (ggplot2)
-# install.packages ("ggplot2")
+
 
 rm(list=ls()) ## Limpando o workspace
 
@@ -37,8 +39,8 @@ theme_set(
 
 ##Carregando os dados---------------
 load('input_data/descritores_IVSCostV2.RData')
-load('input_data/malha_territorial_sf.Rda')
 
+rm(setores_sf)
 
 #V5: Selecionando  variáveis--------------
 set<-setores%>%transmute(cod_setor=cod_setor,
@@ -250,205 +252,42 @@ pc_g<-pcgeral%>%transmute(all_pc1=PC1,
 
 seti<-cbind(seti,pc_cp,pc_ci,pc_g)
 
-
-#Selecionando variáveis originais e IVS
-# set.m<-seti[c(1:10,20)]
-# set.m<-melt(set.m,id='ivs2')
-
-# ggplot(set.m,aes(x=ivs2,y=value))+geom_smooth()+
-  # geom_point(size=.05,alpha=.5)+
-  # facet_wrap(~variable,scales='free_y', ncol=5)+
-  # xlab('IVS')+ylab('Normalized Values')
-# ggsave("figures/ivs2Xvar_smooth.jpg",dpi=300, units = 'cm', width = 15, height = 12)
-
-# ggplot(set.m,aes(x=ivs2,y=value))+geom_smooth()+
-  # geom_point(alpha=.1,size=.05)
-
 #Cálculo do IVS Opção 1-----------------------
 
-#PC1 de todas as variáveis em conjunto
-seti<-seti%>%mutate(ivs1=all_pc1)
+seti<-seti%>%mutate(ivs1=all_pc1)#PC1 de todas as variáveis em conjunto
 
-#Coeficiente de Determinação R2 - IVS1---------------
+#R2 para IVS1----------
+summary(lm(cd01 ~ ivs1, data=seti))
+summary(lm(cd02 ~ ivs1, data=seti))
+summary(lm(cp01 ~ ivs1, data=seti))
+summary(lm(cp02 ~ ivs1, data=seti))
+summary(lm(cp03 ~ ivs1, data=seti))
+summary(lm(cp04 ~ ivs1, data=seti))
+summary(lm(ci01 ~ ivs1, data=seti))
+summary(lm(ci02 ~ ivs1, data=seti))
+summary(lm(ci03 ~ ivs1, data=seti))
+summary(lm(ci04 ~ ivs1, data=seti))
 
 
 #Cálculo do IVS Opção 2-----------------------
+seti<-seti%>%mutate(ivs2=(cp_pc1+ci_pc1)/2)#Média da somas da PC1cpd e PC1ci
 
-#Média ponderada pela participação de cada pc
-seti<-seti%>%mutate(ivs2=cp_pc1*0.72+cp_pc2*.28+ci_pc1*.66+ci_pc2*.34)
+#R2 para IVS2----------
+summary(lm(cd01 ~ ivs2, data=seti))
+summary(lm(cd02 ~ ivs2, data=seti))
+summary(lm(cp01 ~ ivs2, data=seti))
+summary(lm(cp02 ~ ivs2, data=seti))
+summary(lm(cp03 ~ ivs2, data=seti))
+summary(lm(cp04 ~ ivs2, data=seti))
+summary(lm(ci01 ~ ivs2, data=seti))
+summary(lm(ci02 ~ ivs2, data=seti))
+summary(lm(ci03 ~ ivs2, data=seti))
+summary(lm(ci04 ~ ivs2, data=seti))
 
-#Selecionando variáveis originais e IVS
-set.m<-seti[c(1:10,20)]
-set.m<-melt(set.m,id='ivs2')
-
-ggplot(set.m,aes(x=ivs2,y=value))+geom_smooth()+
-  # geom_point(size=.05,alpha=.5)+
-  facet_wrap(~variable,scales='free_y', ncol=5)+
-  xlab('IVS')+ylab('Normalized Values')
-ggsave("figures/ivs2Xvar_smooth.jpg",dpi=300, units = 'cm', width = 15, height = 12)
-
-ggplot(set.m,aes(x=ivs2,y=value))+geom_smooth()+
-  geom_point(alpha=.1,size=.05)
-
-#Coeficiente de Determinação R2
-cd01.lm<-lm(cd01 ~ ivs2, data=seti)
-summary(cd01.lm)
-
-cd02.lm<-lm(cd02 ~ ivs2, data=seti)
-summary(cd02.lm)
-
-cp01.lm<-lm(cp01 ~ ivs2, data=seti)
-summary(cp01.lm)
-
-cp02.lm<-lm(cp02 ~ ivs2, data=seti)
-summary(cp02.lm)
-
-cp03.lm<-lm(cp03 ~ ivs2, data=seti)
-summary(cp03.lm)
-
-cp04.lm<-lm(cp04 ~ ivs2, data=seti)
-summary(cp04.lm)
-
-ci01.lm<-lm(ci01 ~ ivs2, data=seti)
-summary(ci01.lm)
-
-ci02.lm<-lm(ci02 ~ ivs2, data=seti)
-summary(ci02.lm)
-
-ci03.lm<-lm(ci03 ~ ivs2, data=seti)
-summary(ci03.lm)
-
-ci04.lm<-lm(ci04 ~ ivs2, data=seti)
-summary(ci04.lm)
-
-#Cálculo do IVS Opção 1-----------------------
-
-#Média ponderada pela participação de cada pc
-seti<-seti%>%mutate(ivs1=all_pc1*0.63+all_pc2*.19+all_pc3*.14)
-
-#Coeficiente de Determinação R2----------
-
-cd01.lm<-lm(cd01 ~ ivs1, data=seti)
-summary(cd01.lm)
-
-cd02.lm<-lm(cd02 ~ ivs1, data=seti)
-summary(cd02.lm)
-
-cp01.lm<-lm(cp01 ~ ivs1, data=seti)
-summary(cp01.lm)
-
-cp02.lm<-lm(cp02 ~ ivs1, data=seti)
-summary(cp02.lm)
-
-cp03.lm<-lm(cp03 ~ ivs1, data=seti)
-summary(cp03.lm)
-
-cp04.lm<-lm(cp04 ~ ivs1, data=seti)
-summary(cp04.lm)
-
-ci01.lm<-lm(ci01 ~ ivs1, data=seti)
-summary(ci01.lm)
-
-ci02.lm<-lm(ci02 ~ ivs1, data=seti)
-summary(ci02.lm)
-
-ci03.lm<-lm(ci03 ~ ivs1, data=seti)
-summary(ci03.lm)
-
-ci04.lm<-lm(ci04 ~ ivs1, data=seti)
-summary(ci04.lm)
-
-
-
-
-#Cálculo do IVS Opção 2-----------------------
-
-#Média da somas da PC1cpd e PC1ci
-seti<-seti%>%mutate(ivs2=(cp_pc1+ci_pc1)/2)
-
-#Coeficiente de Determinação R2 - IVS2----------
-cd01.lm<-lm(cd01 ~ ivs2, data=seti)
-summary(cd01.lm)
-
-cd02.lm<-lm(cd02 ~ ivs2, data=seti)
-summary(cd02.lm)
-
-cp01.lm<-lm(cp01 ~ ivs2, data=seti)
-summary(cp01.lm)
-
-cp02.lm<-lm(cp02 ~ ivs2, data=seti)
-summary(cp02.lm)
-
-cp03.lm<-lm(cp03 ~ ivs2, data=seti)
-summary(cp03.lm)
-
-cp04.lm<-lm(cp04 ~ ivs2, data=seti)
-summary(cp04.lm)
-
-ci01.lm<-lm(ci01 ~ ivs2, data=seti)
-summary(ci01.lm)
-
-ci02.lm<-lm(ci02 ~ ivs2, data=seti)
-summary(ci02.lm)
-
-ci03.lm<-lm(ci03 ~ ivs2, data=seti)
-summary(ci03.lm)
-
-ci04.lm<-lm(ci04 ~ ivs2, data=seti)
-
-#Coeficiente de Determinação R2 - PC1----------
-cd01.lm<-lm(cd01 ~ all_pc1, data=seti)
-summary(cd01.lm)
-
-cd02.lm<-lm(cd02 ~ all_pc1, data=seti)
-summary(cd02.lm)
-
-cp01.lm<-lm(cp01 ~ all_pc1, data=seti)
-summary(cp01.lm)
-
-cp02.lm<-lm(cp02 ~ all_pc1, data=seti)
-summary(cp02.lm)
-
-cp03.lm<-lm(cp03 ~ all_pc1, data=seti)
-summary(cp03.lm)
-
-cp04.lm<-lm(cp04 ~ all_pc1, data=seti)
-summary(cp04.lm)
-
-ci01.lm<-lm(ci01 ~ all_pc1, data=seti)
-summary(ci01.lm)
-
-ci02.lm<-lm(ci02 ~ all_pc1, data=seti)
-summary(ci02.lm)
-
-ci03.lm<-lm(ci03 ~ all_pc1, data=seti)
-summary(ci03.lm)
-
-ci04.lm<-lm(ci04 ~ all_pc1, data=seti)
-
-summary(ci04.lm)
-
-
-
-#Montando o SHP com as malhas-----------------
-
-
-#Setores-----
-
-
+#Salvando o DF de setores-------------
 head(setores)#variáveis brutas
 head(seti)#PCA e IVS
-head(set_sf)#Geometria e tipo do setor
 
-setores<-merge(set_sf,setores, by=c('cod_setor','cod_mun'))
 setores<-merge(setores,seti,by=c('cod_setor'),all.x=T)
-head(setores)
-
-
-
-setores<-merge(set_sf,setores, by=c('cod_setor'))
-setores<-merge(setores,seti,by=c('cod_setor'),all.x=T)
-
-setores$geometry<-NULL
 
 save(setores,file='output_data/setores_ivs.Rda')
