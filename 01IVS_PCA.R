@@ -32,6 +32,7 @@ theme_set(
     theme(text=element_text(family="Times"))
 )
 
+
 ##Carregando os dados---------------
 load('input_data/descritores_IVSCostV2.RData')
 load('output_data/malha_territorial_sf.Rda')
