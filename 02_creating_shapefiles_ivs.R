@@ -57,9 +57,10 @@ uf<-setores%>%select(-tipo,-cod_setor,-cod_mun,-nm_mun,-nm_micro,-nm_meso)%>%
   summarise_all(~ mean(.x, na.rm = TRUE))
 
 uf<-merge(uf_sf,uf,by=c('cod_uf'))
+plot(uf%>%select(ivsf))
 plot(uf%>%select(ivs1))
 write_sf(uf,'output_data/shapes/uf_ivs.shp')
 
-save(meso,micro,muni,uf,setores,file='output_data/malha_territorial_ivs.Rda')
+save(meso,micro,muni,uf,setores,file='output_data/malha_territorial_ivs_v6.Rda')
 
 
